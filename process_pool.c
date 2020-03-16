@@ -1,8 +1,7 @@
 #include <stdlib.h>
-#include <stdio.h>  
+#include <stdio.h>
 #include "process_pool.h"
 #include "mpi.h"
-
 
 static int rank;
 static int UEs;
@@ -31,9 +30,7 @@ void create_type()
         handling_exit("Not succesuful on creating data type for handling messages!");
 }
 
-
-
- void send_command(int code, int receiver, int context)
+void send_command(int code, int receiver, int context)
 {
     Message_Command command;
     command.com = code;
@@ -71,10 +68,11 @@ int create_pool()
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &UEs);
 
-    check_resources();
     /*Master has to create the units of executions*/
     if (rank == _MASTER)
     {
+        check_resources();
+    
         /*Initialize them and allocate them*/
         UEs_state = (int *)malloc(UEs * sizeof(int));
         init_UEs(UEs);
@@ -83,11 +81,11 @@ int create_pool()
         return 2;
     }
     else
-    {   /*If the rank is worker then wait for a message
+    { /*If the rank is worker then wait for a message
         * Master will have to issue an IDLE command in order to wake up the worker in the future
         */
         MPI_Recv(&incoming_msg, 1, Message_Control_DataType, 0, CONTROL_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        
+
         return recv_handler_worker();
     }
 }
@@ -103,19 +101,17 @@ void terminate_pool()
         int i;
         for (i = 0; i < UEs - 1; i++)
         {
-            send_command(_STOP,i+1,0);
+            send_command(_STOP, i + 1, 0);
         }
         /* Barrier the termination and free the datatype*/
     }
-        MPI_Barrier(MPI_COMM_WORLD);
-        MPI_Type_free(&Message_Control_DataType);
-    
+    MPI_Barrier(MPI_COMM_WORLD);
+    MPI_Type_free(&Message_Control_DataType);
 }
 
 /*Wait forever and handle the receives  (Master Poll)*/
-int  receiving_handle()
+int receiving_handle()
 {
-
     if (rank == 0)
     {
         MPI_Status status;
@@ -129,27 +125,36 @@ int  receiving_handle()
         case _KILL:
             /*Set the string of the specific position of the MPI rank state to 0(dead).*/
             UEs_state[incoming_rank - 1] = 0;
+            break;
         case _STOP:
             /*TO DO:*/
+            break;
         case _START:
             /*Increament for waiting processes.*/
             processes_waiting_to_start++; /*Parent is the incoming rank*/
             int r = startAwaitingTask(processes_waiting_to_start, incoming_rank);
             MPI_Send(&r, 1, MPI_INT, incoming_rank, PID_TAG, MPI_COMM_WORLD);
         /*If sleeping set the state to 0 */
+            break;
         case _SLEEP:
             UEs_state[incoming_rank - 1] = 0;
-            handling_exit("11111111111eeWorker process fault");
         /*If run is completed then increament */
+            break;
         case _COMPLETE:
+            return 0;
             //AwaitProcess
-        case _IDLE: handling_exit("1111Worker process fault");
+            break;
+        case _IDLE:
+            //handling_exit("1111Worker process fault");
+            break;
         default:
             handling_exit("Worker process fault");
         }
-    return 1;
-    }else{
-     return 0;  
+        return 1;
+    }
+    else
+    {
+        return 0;
     }
 }
 
@@ -166,7 +171,7 @@ int startWorkerProcess()
         int workerRank;
         /*Send a command to the worker*/
         send_command(_START, 0, 0);
-        /*Reveive the rank of this worker*/                
+        /*Reveive the rank of this worker*/
         MPI_Recv(&workerRank, 1, MPI_INT, 0, PID_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         return workerRank;
     }
@@ -186,13 +191,14 @@ int startAwaitingTask(int awaiting_id, int UE_to_start)
 
                 UEs_state[i] = 1;
                 if (processes_waiting_to_start == awaiting_id)
-                {                 
+                {
                     awaitingProcessMPIRank = i + 1;
-                    printf("[Master] Starting process %d\n", i+1);
+                    printf("[Master] Starting process %d\n", i + 1);
                     send_command(_IDLE, awaitingProcessMPIRank, UE_to_start);
                 }
-                else{
-				    printf("[Master] Starting process with -1 %d\n", i+1);
+                else
+                {
+                    printf("[Master] Starting process with -1 %d\n", i + 1);
                     send_command(_IDLE, awaitingProcessMPIRank, -1);
                 }
                 processes_waiting_to_start--;
@@ -223,8 +229,11 @@ int workerSleep()
         if (incoming_msg.com == _IDLE)
         {
             send_command(_SLEEP, _MASTER, 0);
-            if (req_poll != MPI_REQUEST_NULL)
+            if (req_poll != MPI_REQUEST_NULL){
+                //printf("ms%d",msg); 
                 MPI_Wait(&req_poll, MPI_STATUS_IGNORE);
+                printf("Message%d",incoming_msg.com);
+            }
         }
         return recv_handler_worker();
     }
@@ -235,20 +244,20 @@ int workerSleep()
     }
 }
 
-int should_terminate_worker(){
-    if(req_poll != MPI_REQUEST_NULL){
+int should_terminate_worker()
+{
+    if (req_poll != MPI_REQUEST_NULL)
+    {
         int flag;
         /* check if non blocking communication is completed */
         MPI_Test(&req_poll, &flag, MPI_STATUS_IGNORE);
-        if (flag && incoming_msg.com== _STOP){
+        if (flag && incoming_msg.com == _STOP)
+        {
             return 1;
         }
     }
     return 0;
 }
-
-
-
 
 /*Handling a workers receiving command*/
 static int recv_handler_worker()
@@ -272,6 +281,3 @@ static int recv_handler_worker()
         return 0;
     }
 }
-
-
-
