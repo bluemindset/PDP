@@ -44,8 +44,10 @@ static void update_avgs(int influx, int pop, struct Squirrel *this)
 
     if (this->steps == 50)
         this->steps = 0;
+   
     this->influx[this->steps] = influx;
     this->pop[this->steps] = pop;
+
     (this->steps)++;
     int i;
     double avg_i = 0, avg_p = 0;
@@ -64,10 +66,10 @@ static void update_avgs(int influx, int pop, struct Squirrel *this)
  * Determines whether a squirrel will give birth or not based upon the average population and a random seed
  * which is modified. You can enclose this function call in an if statement if that is useful.
  */
-static int willGiveBirth(float avg_pop, long *state, struct Squirrel *this)
+static int willGiveBirth( long *state, struct Squirrel *this)
 {
     float probability = 100.0; // Decrease this to make more likely, increase less likely
-    float tmp = avg_pop / probability;
+    float tmp = this->avg_pop / probability;
 
     return (ran2(state) < (atan(tmp * tmp) / (4 * tmp)));
 }
@@ -76,10 +78,11 @@ static int willGiveBirth(float avg_pop, long *state, struct Squirrel *this)
  * Determines whether a squirrel will catch the disease or not based upon the average infection level
  * and a random seed which is modified. You can enclose this function call in an if statement if that is useful.
  */
-static int willCatchDisease(float avg_inf_level, long *state, struct Squirrel *this)
+static int willCatchDisease(long *state, struct Squirrel *this)
 {
     float probability = 1000.0; // Decrease this to make more likely, increase less likely
-    return (ran2(state) < (atan(((avg_inf_level < 40000 ? avg_inf_level : 40000)) / probability) / M_PI));
+    if (ran2(state) < (atan(((this->avg_influx < 40000 ? this->avg_influx : 40000)) / probability) / M_PI))
+        this->health = 0;
 }
 
 /**
@@ -94,7 +97,7 @@ static int willDie(long *state, struct Squirrel *this)
 /**
  * Returns the id of the cell from its x and y coordinates.
  */
-static int getCellFromPosition(float x, float y, struct Squirrel *this)
+static int getCellFromPosition(float x, float y)
 {
     return ((int)(x * 4) + 4 * (int)(y * 4));
 }

@@ -1,5 +1,10 @@
 
 
+typedef struct Day {
+    int squirrels_healthy;
+    int squirrels_unhealthy;
+    Day* nextday;
+}Day;
 
 struct Cell {
     struct Actor actor; 
@@ -7,10 +12,12 @@ struct Cell {
     int seed; 
     float pos_x;
     float pos_y;
-    float influx;
-    float pop;
+    int influx;
+    int pop;
     int (*getCellIDFromPosition) (float, float, struct Cell *);
-
+    int * squirrels_month;
+    Day * squirrels_day;
+    int c;
 };
 
 extern const struct CellClass{

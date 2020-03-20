@@ -13,8 +13,8 @@ struct Squirrel {
     double avg_pop;
     /*Declaring functions*/
     void (*squirrelStep)(long *,struct Squirrel*);
-    int (*willGiveBirth)(float, long *,struct Squirrel*);
-    int (*willCatchDisease)(float, long *,struct Squirrel*);
+    int (*willGiveBirth)( long *,struct Squirrel*);
+    int (*willCatchDisease)( long *,struct Squirrel*);
     int (*willDie)(long *,struct Squirrel*);
     void (*update_avgs)(int influx, int pop, struct Squirrel *this);
 

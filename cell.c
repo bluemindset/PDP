@@ -19,7 +19,7 @@ static int getCellIDFromPosition(float x, float y,struct Cell *this){
 static struct Cell new(int rank,int ID, float pos_x,float pos_y) {
 	  struct Cell cell={.pos_x= pos_x,.pos_y= pos_y, .getCellIDFromPosition=&getCellIDFromPosition};
       cell.actor = Actor.new(rank, ID);
-    
+      cell.c = 0;
       return cell; 
 }
 

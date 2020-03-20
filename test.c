@@ -1,23 +1,20 @@
 
 #include <stdio.h>
+#include <time.h>
 
-#define func(x) _Generic((x), int: func_int, char: func_char)(x);
 
-void func_int (int x)
-{
-  printf("%s\t%d\n", __func__, x);
-}
-
-void func_char (char x)
-{
-  printf("%s\t%c\n", __func__, x);
-}
+void delay(unsigned int);
 
 int main(void)
 {
-  int i = 5;
-  char c = 'A';
+    delay(0.5);
+    delay(0.5);
+    delay(0.5);delay(0.5);
+    delay(0.5);delay(0.5);delay(0.5);delay(0.5);delay(0.5);delay(0.5);delay(0.5);delay(0.5);delay(0.5);
+    return 0;
+}
 
-  func(i);
-  func(c);
+void delay(unsigned int secs){
+    unsigned int retTime = time(0) + secs;   // Get finishing time.
+    while (time(0) < retTime);               // Loop until it arrives.
 }
