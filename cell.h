@@ -1,4 +1,5 @@
-
+#ifndef CELL_H_
+#define CELL_H_
 
 typedef struct Day {
     int squirrels_healthy;
@@ -25,3 +26,4 @@ extern const struct CellClass{
 } Cell;
 
 //static int getCellFromPosition(float, float, struct Cell *);
+#endif

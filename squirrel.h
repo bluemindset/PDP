@@ -1,3 +1,5 @@
+#ifndef _SQUIRREL_H
+#define _SQUIRREL_H
 
 struct Squirrel {
     /*Declaring actor fields*/
@@ -24,4 +26,17 @@ extern const struct SquirrelClass{
     struct Squirrel (*new)(int rank, int ID, int steps,int seed,float pos_x,float pos_y);
 } Squirrel;
 
-//static void initialiseRNG(long *,struct Squirrel *);
+
+void initialiseRNG(long *);
+
+void squirrelStep(float, float, float *, float *, long *);
+
+int willGiveBirth(float, long *);
+
+int willCatchDisease(float, long *);
+
+int willDie(long *);
+
+int getCellFromPosition(float, float);
+
+#endif

@@ -1,4 +1,8 @@
+
+
+
 #include "actor.h"
+#include "main.h"
 #include "squirrel.h"
 #include <math.h>
 #include <stdio.h>
@@ -31,12 +35,13 @@ static void initialiseRNG(long *seed)
  * generator and is also modified.
  * x_new can point to x, and y_new can point to y
  */
-static void squirrelStep(long *state, struct Squirrel *this)
-{
-    float diff1 = ran2(state);
-    float diff2 = ran2(state);
-    this->pos_x = (this->pos_x + diff1) - (int)(this->pos_x + diff1);
-    this->pos_y = (this->pos_y + diff2) - (int)(this->pos_y + diff2);
+void squirrelStep(float x, float y, float* x_new, float* y_new, long * state){
+
+    float diff=ran2(state);
+    *x_new=(x+diff)-(int)(x+diff);
+
+    diff=ran2(state);
+    *y_new=(y+diff)-(int)(y+diff);
 }
 
 static void update_avgs(int influx, int pop, struct Squirrel *this)
@@ -66,50 +71,81 @@ static void update_avgs(int influx, int pop, struct Squirrel *this)
  * Determines whether a squirrel will give birth or not based upon the average population and a random seed
  * which is modified. You can enclose this function call in an if statement if that is useful.
  */
-static int willGiveBirth( long *state, struct Squirrel *this)
-{
-    float probability = 100.0; // Decrease this to make more likely, increase less likely
-    float tmp = this->avg_pop / probability;
+int willGiveBirth(float avg_pop, long * state) {
+	float probability=100.0; // Decrease this to make more likely, increase less likely
+    float tmp=avg_pop/probability;
 
-    return (ran2(state) < (atan(tmp * tmp) / (4 * tmp)));
+    return (ran2(state)<(atan(tmp*tmp)/(4*tmp)));
 }
 
 /**
  * Determines whether a squirrel will catch the disease or not based upon the average infection level
  * and a random seed which is modified. You can enclose this function call in an if statement if that is useful.
  */
-static int willCatchDisease(long *state, struct Squirrel *this)
-{
-    float probability = 1000.0; // Decrease this to make more likely, increase less likely
-    if (ran2(state) < (atan(((this->avg_influx < 40000 ? this->avg_influx : 40000)) / probability) / M_PI))
-        this->health = 0;
+int willCatchDisease(float avg_inf_level, long * state) {
+	float probability=1000.0; // Decrease this to make more likely, increase less likely
+    return(ran2(state)<(atan(((avg_inf_level < 40000 ? avg_inf_level : 40000))/probability)/M_PI));
 }
+
 
 /**
  * Determines if a squirrel will die or not. The state is used in the random number generation and
  * is modified. You can enclose this function call in an if statement if that is useful.
  */
-static int willDie(long *state, struct Squirrel *this)
-{
-    return (ran2(state) < (0.166666666));
+int willDie(long * state) {
+    return(ran2(state)<(0.166666666));
 }
 
 /**
  * Returns the id of the cell from its x and y coordinates.
  */
-static int getCellFromPosition(float x, float y)
-{
-    return ((int)(x * 4) + 4 * (int)(y * 4));
-}
 
-static struct Squirrel new (double addr, int ID, int steps, int seed, float p_x, float p_y)
-{
-    struct Squirrel squirrel = {.steps = steps, .seed = seed, .pos_x = p_x, .pos_y = p_y,.update_avgs= &update_avgs, .squirrelStep = &squirrelStep, .willGiveBirth = &willGiveBirth, .willCatchDisease = &willCatchDisease, .willDie = &willDie};
-    squirrel.actor = Actor.new(addr, ID);
-    squirrel.health = 1;
-    squirrel.avg_influx = 0;
-    squirrel.avg_pop = 0;
-    return squirrel;
-}
 
-const struct SquirrelClass Squirrel = {.new = &new};
+
+/* Squirrel Routine 
+      1. Move 
+      2. Send Message to cell health status and wait until successfull
+      3. Caclulate prop die 
+      4. Caclulate prop born 
+     */
+  void squirrels_work(struct Squirrel * squirrel, int rank, _registry_cell *registry)
+  {
+    int die = 0;
+    while (!die)
+    {
+      int seed = 0;
+      int influx;
+      int pop;
+
+      /*If squirrel died then skip the rest and flag to 1*/
+      if (!squirrel->health)
+      {
+        die = squirrel->willDie(seed, squirrel);
+        continue;
+      }
+
+      /*Send health to the stepping cell*/
+      int cell_ID = getCellFromPosition(squirrel->pos_x, squirrel->pos_y);
+      access_registry(cell_ID, registry);
+      send_msg_sq(registry[cell_ID].rank, _TAG_SQUIRRELS, MPI_INT, MPI_COMM_WORLD, &(squirrel->actor));
+
+      MPI_Status s1;
+      MPI_Status s2;
+      MPI_Request r1;
+      MPI_Request r2;
+
+      /*Receive message from the cell*/
+      MPI_IRecv(&influx, 1, MPI_INT, MPI_ANY_SOURCE, _TAG_SQUIRRELS, &s1, &r1);
+      MPI_IRecv(&pop, 1, MPI_INT, MPI_ANY_SOURCE, _TAG_SQUIRRELS, &s2, &r2);
+
+      /*Squirrel Moves*/
+      (squirrel)->squirrelStep(&seed, (squirrel));
+
+      MPI_Wait(&s1, &r1);
+      MPI_Wait(&s2, &r2);
+
+      squirrel->update_avgs(influx, pop, squirrel);
+      squirrel->willCatchDisease(seed, squirrel);
+      squirrel->willGiveBirth(seed, squirrel);
+    }
+  }

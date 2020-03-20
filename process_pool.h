@@ -1,3 +1,6 @@
+#ifndef _POOL_H
+#define _POOL_H
+
 #include <stdlib.h>
 #include <stdio.h>
 #include "mpi.h"
@@ -35,7 +38,7 @@ typedef struct Message_Command{
 } Message_Command;
 
 
-
+#endif
 
 //Create a command data type
 

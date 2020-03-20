@@ -7,10 +7,7 @@ void delay(unsigned int);
 
 int main(void)
 {
-    delay(0.5);
-    delay(0.5);
-    delay(0.5);delay(0.5);
-    delay(0.5);delay(0.5);delay(0.5);delay(0.5);delay(0.5);delay(0.5);delay(0.5);delay(0.5);delay(0.5);
+    delay(2);
     return 0;
 }
 
