@@ -14,10 +14,11 @@ struct Squirrel {
     double avg_influx;
     double avg_pop;
     /*Declaring functions*/
-    void (*squirrelStep)(long *,struct Squirrel*);
-    int (*willGiveBirth)( long *,struct Squirrel*);
-    int (*willCatchDisease)( long *,struct Squirrel*);
-    int (*willDie)(long *,struct Squirrel*);
+    // void (*squirrelStep)(float x, float y, float *x_new, float *y_new, long *state);
+
+    // int (*willGiveBirth)
+    // int (*willCatchDisease)( long *,struct Squirrel*);
+    // int (*willDie)(long *,struct Squirrel*);
     void (*update_avgs)(int influx, int pop, struct Squirrel *this);
 
 };
@@ -27,16 +28,44 @@ extern const struct SquirrelClass{
 } Squirrel;
 
 
-void initialiseRNG(long *);
 
+/*Update the averages of the squirrels*/
+static void update_avgs(int influx, int pop, struct Squirrel *this);
+
+/* Squirrel Routine 
+      1. Move 
+      2. Send Message to cell health status and wait until successfull
+      3. Caclulate prop die 
+      4. Caclulate prop born 
+     */
+
+
+/**
+ * Simulates the step of a squirrel. You can call this with the arguments (0,0,&x,&y,&state)
+ * to determine a random initial starting point.
+ * x_new and y_new are the new x and y coordinates, state is used in the random number
+ * generator and is also modified.
+ * x_new can point to x, and y_new can point to y
+ */
 void squirrelStep(float, float, float *, float *, long *);
 
+/**
+ * Determines whether a squirrel will give birth or not based upon the average population and a random seed
+ * which is modified. You can enclose this function call in an if statement if that is useful.
+ */
 int willGiveBirth(float, long *);
 
+/**
+ * Determines whether a squirrel will catch the disease or not based upon the average infection level
+ * and a random seed which is modified. You can enclose this function call in an if statement if that is useful.
+ */
 int willCatchDisease(float, long *);
 
+/**
+ * Determines if a squirrel will die or not. The state is used in the random number generation and
+ * is modified. You can enclose this function call in an if statement if that is useful.
+ */
 int willDie(long *);
 
-int getCellFromPosition(float, float);
 
 #endif

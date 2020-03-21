@@ -11,8 +11,8 @@
     int ID;
     int (*getRank)(struct Actor *this);
     int (*getID)(struct Actor *this);
-    void (*send_msg_char)(char x,int _rank, int _tag, MPI_Datatype mpi_type, MPI_Comm comm,struct Actor* this);
-    void (*send_msg_int)(int x,int _rank, int _tag, MPI_Datatype mpi_type, MPI_Comm comm,struct Actor* this);
+ //   void (*send_msg_char)(char x,int _rank, int _tag, MPI_Datatype mpi_type, MPI_Comm comm,struct Actor* this);
+ //   void (*send_msg_int)(int x,int _rank, int _tag, MPI_Datatype mpi_type, MPI_Comm comm,struct Actor* this);
 };
 
 /*Constructor*/

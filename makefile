@@ -1,6 +1,5 @@
-SRC =  actor.c process_pool.c squirrel.c main.c ran2.c cell.c arralloc.c
-LFLAGS=-lm
-CC=mpicc -std=c11
+SRC =  actor.c worker.c    process_pool.c squirrel.c cell.c registry.c main.c ran2.c  master.c  
+CC=mpicc -std=c11 -lm
 
 
 

@@ -1,32 +1,44 @@
 
-  void clock_work()
-  {
+/***************************ACTORS***********************************/
+/********************************************************************/
+#include "actor.h"
+#include "squirrel.h"
+#include "cell.h"
+#include "clock.h"
+/*************************PROCESS************************************/
+/********************************************************************/
+#include "process_pool.h"
+#include "master.h"
+#include "worker.h"
+/*************************LIBRARIES**********************************/
+/********************************************************************/
+#include "stdio.h"
+#include "mpi.h"
+#include <time.h>
+/********************************************************************/
+#include "main.h"
+#include "registry.h"
+/********************************************************************/
+
+void clock_work()
+{
     int day = 0;
     int forever = 1;
     /*Broadcast everyone except self*/
     while (forever)
     {
-      delay(1);
-      day++;
-      /*Gather all the workers*/
-      MPI_Bcast(&day, 1, MPI_INT, _MASTER, MPI_COMM_WORLD);
-      if (day == 30)
-        send_command(_COMPLETE, _MASTER, 0);
+        delay(1);
+        day++;
+        /*Gather all the workers*/
+        MPI_Bcast(&day, 1, MPI_INT, _MASTER, MPI_COMM_WORLD);
+        if (day == 30)
+            send_command(_COMPLETE, _MASTER, 0);
     }
-  }
+}
 
-
-  struct Squirrel *spawnSquirrels(int num_squirrels)
+  void delay(unsigned int secs)
   {
-
-    struct Squirrel *squirrels = (struct Squirrel *)malloc(num_squirrels * sizeof(struct Squirrel));
-    int i = 0;
-
-    /* Spawn actors*/
-    for (i = 0; i < num_squirrels; i++)
-    {
-      *(squirrels + i) = Squirrel.new(5, 10, (int)5, 5000, 0.0, 0.0);
-    }
-
-    return squirrels;
+    unsigned int retTime = time(0) + secs / 10; // Get finishing time.
+    while (time(0) < retTime)
+      ; // Loop until it arrives.
   }

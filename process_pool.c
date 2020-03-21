@@ -54,7 +54,7 @@ int check_resources()
         handling_exit("Not enought resources");
 }
 
-init_UEs(int size)
+void init_UEs(int size)
 {
     int i;
     for (i = 0; i < size - 1; i++)
@@ -188,7 +188,6 @@ int startAwaitingTask(int awaiting_id, int UE_to_start)
             /*if UE is not active*/
             if (!UEs_state[i])
             {
-
                 UEs_state[i] = 1;
                 if (processes_waiting_to_start == awaiting_id)
                 {
@@ -264,9 +263,10 @@ static int recv_handler_worker()
 {
     if (incoming_msg.com == _IDLE)
     {
+        printf("[Worker] Soldier %d is ready  \n", rank);        
         /*Issue a non blocking receive so that it starts work when master orders*/
         MPI_Irecv(&incoming_msg, 1, Message_Control_DataType, _MASTER, CONTROL_TAG, MPI_COMM_WORLD, &req_poll);
-        printf("[Worker] Process %d commanded to work\n", rank);
+        printf("[Worker] Heart-Beat ready!  \n", rank);        
         return 1;
     }
     /* Stop the worker if possible */

@@ -25,7 +25,7 @@ static int getID(struct  Actor *this)
 // }
 /*Create the new Actor*/
 static struct Actor new(int rank,int ID) {
-	return (struct Actor){.rank=rank ,.getID = &getID, .ID=ID, .getRank = &getRank, .send_msg_char=&send_msg_char ,.send_msg_int=&send_msg_int  };
+	return (struct Actor){.rank=rank ,.getID = &getID, .ID=ID, .getRank = &getRank  };
 }
 
 const struct ActorClass Actor={.new=&new};

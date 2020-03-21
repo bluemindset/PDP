@@ -19,9 +19,14 @@ static int processes_waiting_to_start;
 static struct Message_Command incoming_msg;
 static MPI_Request req_poll = MPI_REQUEST_NULL;
 static int recv_handler_worker();
- void send_command(int,int,int);
-
+void send_command(int,int,int);
+int startWorkerProcess();
+int receiving_handle();
 int create_pool();
+int should_terminate_worker();
+int workerSleep();
+void terminate_pool();
+void  init_UEs(int size);
 enum _Command{
     _KILL = 0,
     _STOP = 1,

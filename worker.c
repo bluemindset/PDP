@@ -1,61 +1,42 @@
 
-static void worker(int rank, _registry_cell *registry)
-{
+/*************************LIBRARIES**********************************/
+/********************************************************************/
+#include "mpi.h"
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+/********************************************************************/
+/***************************ACTORS***********************************/
+/********************************************************************/
+#include "actor.h"
+#include "cell.h"
+#include "clock.h"
+#include "squirrel.h"
+#include "registry.h"
+/*************************PROCESS************************************/
+/********************************************************************/
+#include "process_pool.h"
+#include "master.h"
+#include "worker.h"
 
-    int workerStatus = 1;
-    int parentID;
-    int num_squirrels;
-    int num_cells;
-    /*Worker here must wait to receive a message*/
-    while (workerStatus)
-    {
-        /* Say to worker process to start*/
+#include "main.h"
+#include "ran2.h"
+/********************************************************************/
 
-        /*Send a message to master to start*/
-
-        /* Receive message from the master to start the work*/
-        //MPI_Bcast(&num_squirrels, 1, MPI_INT, _MASTER, MPI_COMM_WORLD);
-        // MPI_Bcast(&num_cells, 1, MPI_INT, _MASTER, MPI_COMM_WORLD);
-        int data[4];
-        MPI_Recv(&data, 4, MPI_INT, _MASTER, _TAG_SQUIRRELS, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-        //insert correct ids
-        struct Squirrel *squirrels = spawnSquirrels(num_squirrels);
-        struct Cells *cells = spawnCells(num_cells, data[2], data[3]);
-
-        int i = 0;
-        long seed = 0;
-        /*Each process creates the squirrels and cells*/
-
-        /* Work squirrels*/
-        // for (i = 0; i < num_squirrels; i++)
-        // {
-        // }
-
-        squirrels_work(squirrels + i, rank, registry);
-
-        workerStatus = workerSleep();
-    }
-}
-
-void print_pos(struct Squirrel *this)
-{
-    printf("\nSquirrel ID:%d, pos X:%f ,pos Y:%f ", this->actor.getID(this), this->pos_x, this->pos_y);
-}
 
 /*Return the rank of the cell*/
-int access_registry(int cell_ID, _registry_cell *registry)
-{
-    int i, j;
-    for (i = 0; i < MAX_REG; i++)
-        if (registry->ID == cell_ID)
-            return registry->rank;
-}
 
 int getCellFromPosition(float x, float y)
 {
     return ((int)(x * 4) + 4 * (int)(y * 4));
 }
+
+void print_pos(struct Squirrel *this)
+{
+    printf("\nSquirrel ID:%d, pos X:%f ,pos Y:%f ", this->actor.getID(&this->actor), this->pos_x, this->pos_y);
+}
+
 
 int update_cell_day(struct Cell *this)
 {
@@ -95,20 +76,35 @@ int if_clock_msg(MPI_Status status)
     return 0;
 }
 
-struct Cell *spawnCells(int num_cells, int start_id, int end_id)
+struct Cell *spawnCells(int num_cells, int start_id, int rank)
 {
-    struct Cell *cells = (struct Cells *)malloc(num_cells * sizeof(struct Cell));
+    struct Cell *cells = (struct Cell *)malloc(num_cells * sizeof(struct Cell));
 
     int i = 0;
 
     /* Spawn actors*/
     for (i = 0; i < num_cells; i++)
     {
-        *(cells + i) = Cell.new(5, start_id, 0.0, 0.0);
+        *(cells + i) = Cell.new(rank, start_id, 0.0, 0.0);
         start_id++;
     }
 
     return cells;
+}
+
+struct Squirrel *spawnSquirrels(int num_squirrels,int rank)
+{
+
+    struct Squirrel *squirrels = (struct Squirrel *)malloc(num_squirrels * sizeof(struct Squirrel));
+    int i = 0;
+
+    /* Spawn actors*/
+    for (i = 0; i < num_squirrels; i++)
+    {
+        *(squirrels + i) = Squirrel.new(rank, 0 , 0, 5000, 0.0, 0.0);
+    }
+
+    return squirrels;
 }
 
 void erase_day(struct Day *lastday)
@@ -146,22 +142,64 @@ void chronicle(struct Day **lastday, int healthy_s, int unhealthy_s)
     *lastday = midnight;
 }
 
-
-
-struct Squirrel *spawnSquirrels(int num_squirrels)
+ void worker(int rank,struct Registry_cell *registry,int size)
 {
 
-    struct Squirrel *squirrels = (struct Squirrel *)malloc(num_squirrels * sizeof(struct Squirrel));
-    int i = 0;
-
-    /* Spawn actors*/
-    for (i = 0; i < num_squirrels; i++)
+    int workerStatus = 1;
+    int parentID;
+    int num_squirrels;
+    int num_cells;
+    /*Worker here must wait to receive a message*/
+    while (workerStatus)
     {
-        *(squirrels + i) = Squirrel.new(5, 10, (int)5, 5000, 0.0, 0.0);
-    }
+        /*startWorkerProcess -> call it only if worker needs to rise another one*/
+        /* Say to worker process to start*/
+        //should_terminate_worker();
+        printf("Hi %d",rank );
+        
+        /*Send a message to master to start*/
+        
+        /* Receive message from the master to start the work*/
+        int data[3];
+        MPI_Recv(&data, 3, MPI_INT, _MASTER, _TAG_INITIAL, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+          printf("\nRE");
 
-    return squirrels;
+        /*
+        Data package 
+        [0] = number of squirrels to instantiate
+        [1] = number of cells to instantiate
+        [2] = start ID of cell
+        */
+        /*Instanitate with correct IDs*/
+        struct Squirrel *squirrels = spawnSquirrels(data[0],rank);
+        struct Cell *cells = spawnCells(data[1], data[2], rank);
+        /* Assign into the registry the cells and the squirrels */
+        assign_registry(&registry , rank , squirrels, cells);
+        
+        int reduction_result = 0;
+        int i = 0;
+        MPI_Reduce(&i, &reduction_result, 1, MPI_INT, MPI_SUM, _MASTER, MPI_COMM_WORLD);
+       
+        long seed = 0;
+
+        /*Each process creates the squirrels and cells*/
+
+        /* Work squirrels*/
+        // for (i = 0; i < num_squirrels; i++)
+        // {
+        // }
+
+        //squirrels_work(squirrels + i, rank, registry);
+
+        workerStatus = workerSleep();
+    }
 }
+//  static void send_msg_sq(int _rank, int _tag, MPI_Datatype mpi_type, MPI_Comm comm, struct Squirrel *this)
+//   {
+//     MPI_Send(this->health, 1, mpi_type, _rank, _tag, comm);
+//   }
+
+
 
 // void worker_receive_instructions(int num_cells, int num_squirrels, int size)
 // {
@@ -187,20 +225,16 @@ struct Squirrel *spawnSquirrels(int num_squirrels)
 //   }
 // }
 
-  static void send_msg_sq(int _rank, int _tag, MPI_Datatype mpi_type, MPI_Comm comm, struct Squirrel *this)
-  {
-    MPI_Send(this->health, 1, mpi_type, _rank, _tag, comm);
-  }
+ 
 
 
-
-  void move(struct Squirrel * squirrels, long seed, int num_squirrels)
-  {
-    int i = 0;
-    for (i = 0; i < num_squirrels; i++)
-    {
-      (squirrels + i)->squirrelStep(&seed, (squirrels + i));
-      if (_DEBUG)
-        print_pos(squirrels + i);
-    }
-  }
+//   void move(struct Squirrel * squirrels, long seed, int num_squirrels)
+//   {
+//     int i = 0;
+//     for (i = 0; i < num_squirrels; i++)
+//     {
+//       (squirrels + i)->squirrelStep(&seed, (squirrels + i));
+//       if (_DEBUG)
+//         print_pos(squirrels + i);
+//     }
+//   }
