@@ -24,7 +24,6 @@
 #include "ran2.h"
 /********************************************************************/
 
-
 /*Return the rank of the cell*/
 
 int getCellFromPosition(float x, float y)
@@ -36,7 +35,6 @@ void print_pos(struct Squirrel *this)
 {
     printf("\nSquirrel ID:%d, pos X:%f ,pos Y:%f ", this->actor.getID(&this->actor), this->pos_x, this->pos_y);
 }
-
 
 int update_cell_day(struct Cell *this)
 {
@@ -76,32 +74,31 @@ int if_clock_msg(MPI_Status status)
     return 0;
 }
 
-struct Cell *spawnCells(int num_cells, int start_id, int rank)
+struct Cell *spawnCells(int startID, int endID, int rank)
 {
-    struct Cell *cells = (struct Cell *)malloc(num_cells * sizeof(struct Cell));
+    struct Cell *cells = (struct Cell *)malloc((endID - startID) * sizeof(struct Cell));
 
     int i = 0;
 
     /* Spawn actors*/
-    for (i = 0; i < num_cells; i++)
+    for (i = startID; i < endID; i++)
     {
-        *(cells + i) = Cell.new(rank, start_id, 0.0, 0.0);
-        start_id++;
+        *(cells + i) = Cell.new(rank, i, 0.0, 0.0);
     }
 
     return cells;
 }
 
-struct Squirrel *spawnSquirrels(int num_squirrels,int rank)
+struct Squirrel *spawnSquirrels(int startID, int endID, int rank)
 {
 
-    struct Squirrel *squirrels = (struct Squirrel *)malloc(num_squirrels * sizeof(struct Squirrel));
+    struct Squirrel *squirrels = (struct Squirrel *)malloc((endID - startID) * sizeof(struct Squirrel));
     int i = 0;
 
     /* Spawn actors*/
-    for (i = 0; i < num_squirrels; i++)
+    for (i = startID; i < endID; i++)
     {
-        *(squirrels + i) = Squirrel.new(rank, 0 , 0, 5000, 0.0, 0.0);
+        *(squirrels + i) = Squirrel.new(rank, i, 0, 5000, 0.0, 0.0);
     }
 
     return squirrels;
@@ -142,7 +139,7 @@ void chronicle(struct Day **lastday, int healthy_s, int unhealthy_s)
     *lastday = midnight;
 }
 
- void worker(int rank,struct Registry_cell *registry,int size)
+void worker(int rank, struct Registry_cell *registry, int size)
 {
 
     int workerStatus = 1;
@@ -155,15 +152,14 @@ void chronicle(struct Day **lastday, int healthy_s, int unhealthy_s)
         /*startWorkerProcess -> call it only if worker needs to rise another one*/
         /* Say to worker process to start*/
         //should_terminate_worker();
-        printf("Hi %d",rank );
-        
-        /*Send a message to master to start*/
-        
-        /* Receive message from the master to start the work*/
-        int data[3];
-        MPI_Recv(&data, 3, MPI_INT, _MASTER, _TAG_INITIAL, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-          printf("\nRE");
+        printf("Hi %d", rank);
 
+        /*Send a message to master to start*/
+
+        /* Receive message from the master to start the work*/
+        int data[4];
+        MPI_Recv(&data, 4, MPI_INT, _MASTER, _TAG_INITIAL, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        printf("Received Data from Master\n");
         /*
         Data package 
         [0] = number of squirrels to instantiate
@@ -171,15 +167,13 @@ void chronicle(struct Day **lastday, int healthy_s, int unhealthy_s)
         [2] = start ID of cell
         */
         /*Instanitate with correct IDs*/
-        struct Squirrel *squirrels = spawnSquirrels(data[0],rank);
-        struct Cell *cells = spawnCells(data[1], data[2], rank);
+        int success_assign = 1, success_all_assign = 0;
+        struct Squirrel *squirrels = spawnSquirrels(data[0], data[1], rank);
+        struct Cell *cells = spawnCells(data[2], data[3], rank);
         /* Assign into the registry the cells and the squirrels */
-        assign_registry(&registry , rank , squirrels, cells);
-        
-        int reduction_result = 0;
-        int i = 0;
-        MPI_Reduce(&i, &reduction_result, 1, MPI_INT, MPI_SUM, _MASTER, MPI_COMM_WORLD);
-       
+        MPI_Reduce(&success_assign, &success_all_assign, 1, MPI_FLOAT, MPI_SUM, _MASTER,
+                   MPI_COMM_WORLD);
+        // print_register(registry);
         long seed = 0;
 
         /*Each process creates the squirrels and cells*/
@@ -198,8 +192,6 @@ void chronicle(struct Day **lastday, int healthy_s, int unhealthy_s)
 //   {
 //     MPI_Send(this->health, 1, mpi_type, _rank, _tag, comm);
 //   }
-
-
 
 // void worker_receive_instructions(int num_cells, int num_squirrels, int size)
 // {
@@ -224,9 +216,6 @@ void chronicle(struct Day **lastday, int healthy_s, int unhealthy_s)
 //     c += size;
 //   }
 // }
-
- 
-
 
 //   void move(struct Squirrel * squirrels, long seed, int num_squirrels)
 //   {

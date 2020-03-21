@@ -3,8 +3,7 @@
 /********************************************************************/
 #include "mpi.h"
 #include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include "stdio.h"
 #include <time.h>
 /********************************************************************/
 /***************************ACTORS***********************************/
@@ -27,8 +26,9 @@
 
 int main(int argc, char *argv[])
 {
-  Registry_cell * registry;
-
+  Registry_cell * registry = NULL;
+  //registry = malloc(sizeof(struct Registry_cell)); // allocate 3 nodes in the heap
+  //registry->next = NULL;
   /****Initialize MPI****/
   MPI_Init(NULL, NULL);
 
@@ -49,10 +49,8 @@ int main(int argc, char *argv[])
   {
     //08000468687
     /*Worker determines the jobs to give not other workers*/
-   // printf("heloo %d\n",size);
-
     startworkers(size - 1, workers);
-    master_send_instructions(16, 4, size-1 ,registry,workers);
+    master_send_instructions(16, 4, size-1 , registry,workers);
 
     /*While the master lives*/
     masterlives();
@@ -83,7 +81,6 @@ void squirrels_work(struct Squirrel *squirrel, int rank,struct Registry_cell *re
         int data[2];
         int influx;
         int pop;
-
         /*If squirrel died then skip the rest and flag to 1*/
         if (!squirrel->health)
         {
@@ -115,7 +112,7 @@ void squirrels_work(struct Squirrel *squirrel, int rank,struct Registry_cell *re
         MPI_Irecv(&pop, 1, MPI_INT, MPI_ANY_SOURCE, _TAG_SQUIRRELS, MPI_COMM_WORLD, &r2);
 
        
-
+        fflush(stdout);
         MPI_Wait(&r1, &s1);
         MPI_Wait(&r2, &s2);
 

@@ -27,6 +27,7 @@ int should_terminate_worker();
 int workerSleep();
 void terminate_pool();
 void  init_UEs(int size);
+int startAwaitingTask(int processes_waiting_to_start,int incoming_rank);
 enum _Command{
     _KILL = 0,
     _STOP = 1,
