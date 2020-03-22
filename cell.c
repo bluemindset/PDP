@@ -35,8 +35,7 @@
 
 static struct Cell new(int rank,int ID, float pos_x,float pos_y) {
 	  struct Cell cell={.pos_x= pos_x,.pos_y= pos_y};
-    cell.actor = Actor.new(rank, ID);
-
+        cell.actor = Actor.new(rank, ID);
     return cell; 
 }
 

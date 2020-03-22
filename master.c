@@ -25,7 +25,7 @@
 #include "ran2.h"
 /********************************************************************/
 /********************************************************************/
-void master_send_instructions(int num_cells, int num_squirrels, int size, struct Registry_cell *r, int *workers)
+void master_send_instructions(int num_cells, int num_squirrels, int size, struct Registry_cell **r, int *workers)
 {
   /*Master sends the number of squirrels*/
   /*The tags for exchange the messages are 0 */
@@ -44,14 +44,16 @@ void master_send_instructions(int num_cells, int num_squirrels, int size, struct
   int squirrels_startID = 0, cells_startID = 0;
   int squirrels_endID = num_squirrels / size;
   int cells_endID = num_cells / size;
-
+  int correctsplit = 1;
+  if ((size%2) == 0)
+    correctsplit = 0; 
   for (i = 0; i < size; i++)
   {
     /*if UE is not active*/
     if (workers[i])
     {
 
-      if (i == size - 1)
+      if (i == size - 1 && correctsplit)
       {
         cells_endID++;
         squirrels_endID++;
@@ -61,7 +63,7 @@ void master_send_instructions(int num_cells, int num_squirrels, int size, struct
       data[2] = cells_startID;
       data[3] = cells_endID;
 
-      assign_registry(&r, workers[i], squirrels_startID, squirrels_endID,
+      assign_registry(r, workers[i], squirrels_startID, squirrels_endID,
                       cells_startID, cells_endID);
 
       MPI_Send(&data, 4, MPI_INT, workers[i], _TAG_INITIAL, MPI_COMM_WORLD);
@@ -79,17 +81,29 @@ void master_send_instructions(int num_cells, int num_squirrels, int size, struct
 
   MPI_Reduce(&success_assign, &success_all_assign, 1, MPI_FLOAT, MPI_SUM, _MASTER,
              MPI_COMM_WORLD);
-  printf("Success spaniwng of actors", success_all_assign, size);
-  if (success_all_assign == (size))
-    print_register(r);
+  printf("Success spaniwng of actors %d %d \n", success_all_assign, size);
+ //if (success_all_assign == (size))
+  //print_register(*r);
 }
 
-void masterlives()
+void masterlives(Registry_cell * r)
 {
-  int masterStatus = receiving_handle();
+  print_register(r);
+  int masterStatus =  1;
   while (masterStatus)
   {
-    masterStatus = receiving_handle();
+    MPI_Status status;
+    MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+    if (status.MPI_TAG == _TAG_REGISTRY_CELL ){
+      int ID_to_find;
+      MPI_Recv(&ID_to_find, 1, MPI_INT, MPI_ANY_SOURCE, _TAG_REGISTRY_CELL, MPI_COMM_WORLD, &status);
+      int rank = 0 ; 
+       rank = access_registry(r,0,ID_to_find);
+      printf("RANK REEEE %d %d\n",rank,ID_to_find);
+      MPI_Send(&rank , 1, MPI_INT, status.MPI_SOURCE, _TAG_REGISTRY_CELL, MPI_COMM_WORLD);
+    }
+    else if(status.MPI_TAG == CONTROL_TAG)
+      masterStatus = receiving_handle();
   }
 }
 

@@ -72,7 +72,7 @@ int create_pool()
     if (rank == _MASTER)
     {
         check_resources();
-    
+
         /*Initialize them and allocate them*/
         UEs_state = (int *)malloc(UEs * sizeof(int));
         init_UEs(UEs);
@@ -112,50 +112,43 @@ void terminate_pool()
 /*Wait forever and handle the receives  (Master Poll)*/
 int receiving_handle()
 {
-    if (rank == 0)
+    MPI_Status status;
+    MPI_Recv(&incoming_msg, 1, Message_Control_DataType, MPI_ANY_SOURCE, CONTROL_TAG, MPI_COMM_WORLD, &status);
+    int com = incoming_msg.com;
+    int incoming_rank = status.MPI_SOURCE;
+    int waiting_processes;
+    /*Get the incoming message command*/
+    switch (com)
     {
-        MPI_Status status;
-        MPI_Recv(&incoming_msg, 1, Message_Control_DataType, MPI_ANY_SOURCE, CONTROL_TAG, MPI_COMM_WORLD, &status);
-        int com = incoming_msg.com;
-        int incoming_rank = status.MPI_SOURCE;
-        int waiting_processes;
-        /*Get the incoming message command*/
-        switch (com)
-        {
-        case _KILL:
-            /*Set the string of the specific position of the MPI rank state to 0(dead).*/
-            UEs_state[incoming_rank - 1] = 0;
-            break;
-        case _STOP:
-            /*TO DO:*/
-            break;
-        case _START:
-            /*Increament for waiting processes.*/
-            processes_waiting_to_start++; /*Parent is the incoming rank*/
-            int r = startAwaitingTask(processes_waiting_to_start, incoming_rank);
-            MPI_Send(&r, 1, MPI_INT, incoming_rank, PID_TAG, MPI_COMM_WORLD);
+    case _KILL:
+        /*Set the string of the specific position of the MPI rank state to 0(dead).*/
+        UEs_state[incoming_rank - 1] = 0;
+        break;
+    case _STOP:
+        /*TO DO:*/
+        break;
+    case _START:
+        /*Increament for waiting processes.*/
+        processes_waiting_to_start++; /*Parent is the incoming rank*/
+        int r = startAwaitingTask(processes_waiting_to_start, incoming_rank);
+        MPI_Send(&r, 1, MPI_INT, incoming_rank, PID_TAG, MPI_COMM_WORLD);
         /*If sleeping set the state to 0 */
-            break;
-        case _SLEEP:
-            UEs_state[incoming_rank - 1] = 0;
+        break;
+    case _SLEEP:
+        UEs_state[incoming_rank - 1] = 0;
         /*If run is completed then increament */
-            break;
-        case _COMPLETE:
-            return 0;
-            //AwaitProcess
-            break;
-        case _IDLE:
-            //handling_exit("1111Worker process fault");
-            break;
-        default:
-            handling_exit("Worker process fault");
-        }
-        return 1;
-    }
-    else
-    {
+        break;
+    case _COMPLETE:
         return 0;
+        //AwaitProcess
+        break;
+    case _IDLE:
+        //handling_exit("1111Worker process fault");
+        break;
+    default:
+        handling_exit("Worker process fault");
     }
+    return 1;
 }
 
 int startWorkerProcess()
@@ -228,10 +221,11 @@ int workerSleep()
         if (incoming_msg.com == _IDLE)
         {
             send_command(_SLEEP, _MASTER, 0);
-            if (req_poll != MPI_REQUEST_NULL){
-                //printf("ms%d",msg); 
+            if (req_poll != MPI_REQUEST_NULL)
+            {
+                //printf("ms%d",msg);
                 MPI_Wait(&req_poll, MPI_STATUS_IGNORE);
-                printf("Message%d",incoming_msg.com);
+                printf("Message%d", incoming_msg.com);
             }
         }
         return recv_handler_worker();
@@ -263,10 +257,10 @@ static int recv_handler_worker()
 {
     if (incoming_msg.com == _IDLE)
     {
-        printf("[Worker] Soldier %d is ready  \n", rank);        
+        printf("[Worker] Soldier %d is ready  \n", rank);
         /*Issue a non blocking receive so that it starts work when master orders*/
         MPI_Irecv(&incoming_msg, 1, Message_Control_DataType, _MASTER, CONTROL_TAG, MPI_COMM_WORLD, &req_poll);
-        printf("[Worker] Heart-Beat ready!  \n", rank);        
+        printf("[Worker] Heart-Beat ready!  \n", rank);
         return 1;
     }
     /* Stop the worker if possible */

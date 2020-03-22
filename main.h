@@ -10,6 +10,8 @@
 #define _TAG_CELLS 2
 #define _TAG_CLOCK 3
 #define _TAG_INITIAL 4
+#define _TAG_REGISTRY_CELL 5
+
 /**************************DAYS**************************************/
 /********************************************************************/
 #define _DAYS_INFLUX 5
@@ -25,6 +27,6 @@
  * which also modify the seed
  */
 static void initialiseRNG(long *seed);
-void squirrels_work(struct Squirrel * squirrel, int rank, struct Registry_cell *registry);
-void cells_work(struct Cell *this, int rank, struct Registry_cell *registry);
+void squirrels_work(struct Squirrel * squirrel, int rank, struct Registry_cell *registry,int tid);
+void cells_work(struct Cell *this, int rank, struct Registry_cell *registry,int tid);
 #endif

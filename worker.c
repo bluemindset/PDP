@@ -2,6 +2,7 @@
 /*************************LIBRARIES**********************************/
 /********************************************************************/
 #include "mpi.h"
+#include "omp.h"
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -78,12 +79,12 @@ struct Cell *spawnCells(int startID, int endID, int rank)
 {
     struct Cell *cells = (struct Cell *)malloc((endID - startID) * sizeof(struct Cell));
 
-    int i = 0;
-
+    int i;
+    int k = 0;
     /* Spawn actors*/
     for (i = startID; i < endID; i++)
     {
-        *(cells + i) = Cell.new(rank, i, 0.0, 0.0);
+        *(cells + k++) = Cell.new(rank, i, 0.0, 0.0);
     }
 
     return cells;
@@ -93,12 +94,12 @@ struct Squirrel *spawnSquirrels(int startID, int endID, int rank)
 {
 
     struct Squirrel *squirrels = (struct Squirrel *)malloc((endID - startID) * sizeof(struct Squirrel));
-    int i = 0;
-
+    int i;
+    int k = 0;
     /* Spawn actors*/
     for (i = startID; i < endID; i++)
     {
-        *(squirrels + i) = Squirrel.new(rank, i, 0, 5000, 0.0, 0.0);
+        *(squirrels + k++) = Squirrel.new(rank, i, 0, 5000, 0.0, 0.0);
     }
 
     return squirrels;
@@ -143,17 +144,12 @@ void worker(int rank, struct Registry_cell *registry, int size)
 {
 
     int workerStatus = 1;
-    int parentID;
-    int num_squirrels;
-    int num_cells;
     /*Worker here must wait to receive a message*/
     while (workerStatus)
     {
         /*startWorkerProcess -> call it only if worker needs to rise another one*/
         /* Say to worker process to start*/
         //should_terminate_worker();
-        printf("Hi %d", rank);
-
         /*Send a message to master to start*/
 
         /* Receive message from the master to start the work*/
@@ -168,6 +164,7 @@ void worker(int rank, struct Registry_cell *registry, int size)
         */
         /*Instanitate with correct IDs*/
         int success_assign = 1, success_all_assign = 0;
+        
         struct Squirrel *squirrels = spawnSquirrels(data[0], data[1], rank);
         struct Cell *cells = spawnCells(data[2], data[3], rank);
         /* Assign into the registry the cells and the squirrels */
@@ -177,13 +174,39 @@ void worker(int rank, struct Registry_cell *registry, int size)
         long seed = 0;
 
         /*Each process creates the squirrels and cells*/
-
+        int num_squirrels = (data[1] - data[0]);
+        int num_cells = (data[3] - data[2]);
         /* Work squirrels*/
-        // for (i = 0; i < num_squirrels; i++)
-        // {
-        // }
+        int i;
 
-        //squirrels_work(squirrels + i, rank, registry);
+        
+#pragma omp parallel num_threads(num_squirrels + num_cells)
+        {
+            int tid = omp_get_thread_num();
+            int numthreads = omp_get_num_threads();
+           // printf("num squirels%d",num_squirrels);
+            if (tid < num_squirrels)
+            {   
+                int low = num_squirrels * tid / num_squirrels;
+                int high = num_cells * (tid + 1) / num_squirrels;
+                if (low == high) high++;
+                for (i = low; i < high; i++)
+                {
+                    squirrels_work(squirrels + i, rank, registry, tid);
+                }
+            }
+            else{
+                int low = num_cells * tid / numthreads;
+                int high = num_cells * (tid + 1) / numthreads;
+                //int high = ceil(high_f);
+                //printf("%d  %d\n",low,high);
+                if (low == high) high++;
+                for (i = low; i < high; i++)
+                {
+                    cells_work(cells + i, rank, registry, tid);
+                }
+            }
+        }
 
         workerStatus = workerSleep();
     }
