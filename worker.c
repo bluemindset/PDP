@@ -57,7 +57,7 @@ int if_squirrels_msg(MPI_Status status)
 {
     int tag = status.MPI_TAG;
 
-    if (tag == _TAG_SQUIRRELS)
+    if (tag % _TAG_SQUIRRELS == 0)
     {
         return 1;
     }
@@ -84,7 +84,10 @@ struct Cell *spawnCells(int startID, int endID, int rank)
     /* Spawn actors*/
     for (i = startID; i < endID; i++)
     {
-        *(cells + k++) = Cell.new(rank, i, 0.0, 0.0);
+        *(cells + k) = Cell.new(rank, i, 0.0, 0.0);
+        (cells + k)->influx = 1;
+        (cells + k)->pop = 1;
+        k++;
     }
 
     return cells;
@@ -99,7 +102,8 @@ struct Squirrel *spawnSquirrels(int startID, int endID, int rank)
     /* Spawn actors*/
     for (i = startID; i < endID; i++)
     {
-        *(squirrels + k++) = Squirrel.new(rank, i, 0, 5000, 0.0, 0.0);
+        *(squirrels + k) = Squirrel.new(rank, i, 0, 5000, 0.0, 0.0);
+        k++;
     }
 
     return squirrels;
@@ -142,73 +146,68 @@ void chronicle(struct Day **lastday, int healthy_s, int unhealthy_s)
 
 void worker(int rank, struct Registry_cell *registry, int size)
 {
-
+    /*Worker will either control cells or squirrels*/
     int workerStatus = 1;
-    /*Worker here must wait to receive a message*/
     while (workerStatus)
     {
         /*startWorkerProcess -> call it only if worker needs to rise another one*/
-        /* Say to worker process to start*/
-        //should_terminate_worker();
-        /*Send a message to master to start*/
-
         /* Receive message from the master to start the work*/
-        int data[4];
-        MPI_Recv(&data, 4, MPI_INT, _MASTER, _TAG_INITIAL, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        int data[3];
+        MPI_Recv(&data, 3, MPI_INT, _MASTER, _TAG_INITIAL, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         printf("Received Data from Master\n");
+ 
         /*
         Data package 
-        [0] = number of squirrels to instantiate
-        [1] = number of cells to instantiate
-        [2] = start ID of cell
+        [0] = start ID of squirrel
+        [1] = end ID of squirrel
+        OR
+        [0] = start ID of cell
+        [1] = end ID of cell
+        AND
+        [2] = instatiate squirrels(0) or cells(1) 
         */
         /*Instanitate with correct IDs*/
         int success_assign = 1, success_all_assign = 0;
-        
-        struct Squirrel *squirrels = spawnSquirrels(data[0], data[1], rank);
-        struct Cell *cells = spawnCells(data[2], data[3], rank);
-        /* Assign into the registry the cells and the squirrels */
-        MPI_Reduce(&success_assign, &success_all_assign, 1, MPI_FLOAT, MPI_SUM, _MASTER,
-                   MPI_COMM_WORLD);
-        // print_register(registry);
-        long seed = 0;
-
-        /*Each process creates the squirrels and cells*/
-        int num_squirrels = (data[1] - data[0]);
-        int num_cells = (data[3] - data[2]);
-        /* Work squirrels*/
+        long seed = 1;
         int i;
-
-        
-#pragma omp parallel num_threads(num_squirrels + num_cells)
+        if (1)
         {
-            int tid = omp_get_thread_num();
-            int numthreads = omp_get_num_threads();
-           // printf("num squirels%d",num_squirrels);
-            if (tid < num_squirrels)
-            {   
-                int low = num_squirrels * tid / num_squirrels;
-                int high = num_cells * (tid + 1) / num_squirrels;
-                if (low == high) high++;
-                for (i = low; i < high; i++)
+            if (data[2] == 0)
+            {
+                struct Squirrel *squirrels = spawnSquirrels(data[0], data[1], rank);
+                int num_squirrels = (data[1] - data[0]);
+                MPI_Reduce(&success_assign, &success_all_assign, 1, MPI_FLOAT, MPI_SUM, _MASTER,
+                           MPI_COMM_WORLD);
+                if (1)
                 {
-                    squirrels_work(squirrels + i, rank, registry, tid);
+                    for (i = 0; i < num_squirrels; i++)
+                    {
+                        /*Drop the squirrel somewhere inside the map*/
+                        float new_x, new_y;
+                        squirrelStep(0.0, 0.0, &new_x, &new_y, &seed);
+                        (squirrels + i)->pos_x = new_x;
+                        (squirrels + i)->pos_y = new_y;
+                        squirrels_work(squirrels + i, rank, registry);
+                    }
                 }
             }
-            else{
-                int low = num_cells * tid / numthreads;
-                int high = num_cells * (tid + 1) / numthreads;
-                //int high = ceil(high_f);
-                //printf("%d  %d\n",low,high);
-                if (low == high) high++;
-                for (i = low; i < high; i++)
+            else if (data[2] == 1)
+            {
+                struct Cell *cells = spawnCells(data[0], data[1], rank);
+                int num_cells = (data[1] - data[0]);
+                MPI_Reduce(&success_assign, &success_all_assign, 1, MPI_FLOAT, MPI_SUM, _MASTER,
+                           MPI_COMM_WORLD);
+                /* Assign into the registry the cells and the squirrels */
+                if (1)
                 {
-                    cells_work(cells + i, rank, registry, tid);
+                    for (i = 0; i < num_cells; i++)
+                    {
+                        cells_work(cells + i, rank, registry);
+                    }
                 }
             }
         }
-
-        workerStatus = workerSleep();
+        //workerStatus = workerSleep();
     }
 }
 //  static void send_msg_sq(int _rank, int _tag, MPI_Datatype mpi_type, MPI_Comm comm, struct Squirrel *this)
@@ -250,3 +249,40 @@ void worker(int rank, struct Registry_cell *registry, int size)
 //         print_pos(squirrels + i);
 //     }
 //   }
+
+/* Say to worker process to start*/
+//should_terminate_worker();
+/*Send a message to master to start*/
+
+/* Work squirrels*/
+// #pragma omp parallel num_threads(2)
+//         {
+
+//             int tid = omp_get_thread_num();
+//             int numthreads = omp_get_num_threads();
+
+//             if (tid == 0)
+//             {
+//                 for (i = 0; i < num_squirrels; i++)
+//                 {
+//                     if (squ_id[i] != -1)
+//                     {
+//                         /*Drop the squirrel somewhere inside the map*/
+//                         float new_x, new_y;
+//                         squirrelStep(0, 0, &new_x, &new_y, &seed);
+//                         (squirrels + squ_id[i])->pos_x = new_x;
+//                         (squirrels + squ_id[i])->pos_y = new_y;
+//                         squirrels_work(squirrels + squ_id[i], rank, registry, squ_id, i);
+//                     }
+//                 }
+//             }
+//             else
+//             {
+//                 {
+//                     for (i = 0; i < num_cells; i++)
+//                     {
+//                         cells_work(cells + cells_id[i], rank, registry, tid);
+//                     }
+//                 }
+//             }
+//         }

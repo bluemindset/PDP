@@ -6,7 +6,7 @@
 #define MAX_REG 10
 /**************************TAGS**************************************/
 /********************************************************************/
-#define _TAG_SQUIRRELS 1
+#define _TAG_SQUIRRELS 6
 #define _TAG_CELLS 2
 #define _TAG_CLOCK 3
 #define _TAG_INITIAL 4
@@ -27,6 +27,6 @@
  * which also modify the seed
  */
 static void initialiseRNG(long *seed);
-void squirrels_work(struct Squirrel * squirrel, int rank, struct Registry_cell *registry,int tid);
-void cells_work(struct Cell *this, int rank, struct Registry_cell *registry,int tid);
+void squirrels_work(struct Squirrel * squirrel, int rank, struct Registry_cell *registry);
+void cells_work(struct Cell *cell, int rank, struct Registry_cell *registry);
 #endif
