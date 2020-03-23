@@ -29,24 +29,25 @@
 void master_send_instructions(int num_cells, int num_squirrels, int size, struct Registry_cell **r, int *workers)
 {
   /*Master sends the number of squirrels*/
-  /*The tags for exchange the messages are 0 */
-  //  int number_squirrel = 4;
-  //  int number_cells = 16;
-
   /*
-    Data package 
-    [0] = number of squirrels to instantiate
-    [1] = number of cells to instantiate
-    [2] = start ID of cell
-   */
+            Data package 
+            [0] = start ID of squirrel
+            [1] = end ID of squirrel
+            OR
+            [0] = start ID of cell
+            [1] = end ID of cell
+            AND
+            [2] = instatiate squirrels(0) or cells(1) 
+  */
 
   int i =0;
   int *workers_cells;
   int *workers_squirrels;
   int ws = 0, wc = 0;
 
+/***************************************** DIVIDING THE WORK  ****************************************/
+  
   /*A process will handle some actors but only one of a kind*/
-
   if (size % 2 == 0)
   {
     workers_cells = (int *)malloc(sizeof(int) * (size / 2));
@@ -79,6 +80,7 @@ void master_send_instructions(int num_cells, int num_squirrels, int size, struct
     }
   }
 
+/***************************************** WORKERS INITIALIZATION ****************************************/
   int data[3];
   int squirrels_startID = 0, cells_startID = 0;
   int squirrels_endID = (num_squirrels / ws);
@@ -88,7 +90,7 @@ void master_send_instructions(int num_cells, int num_squirrels, int size, struct
   if ((size % 2) == 0)
     correctsplit = 0;
 
-  /*Send the squirrels*/
+  /*Send the squirrels to the workers*/
   for (i = 0; i < ws; i++)
   {
     if (i == size - 1 && correctsplit)
@@ -98,15 +100,16 @@ void master_send_instructions(int num_cells, int num_squirrels, int size, struct
     data[0] = squirrels_startID;
     data[1] = squirrels_endID;
     data[2] = 0;
+    /*Assign the IDs of the actors to the registry and send them to the workers*/
     assign_registry(r, workers_squirrels[i], squirrels_startID, squirrels_endID,
                     0, 0, 0);
-
     MPI_Send(&data, 3, MPI_INT, workers_squirrels[i], _TAG_INITIAL, MPI_COMM_WORLD);
-    printf("Sending to rank : %d, the data %d %d %d\n", workers_squirrels[i], data[0], data[1], data[2]);
+    if (_DEBUG) printf("Sending to rank : %d, the data %d %d %d\n", workers_squirrels[i], data[0], data[1], data[2]);
     squirrels_startID += (num_squirrels / ws);
     squirrels_endID += (num_squirrels / ws);
   }
-  /*Send the cells*/
+
+  /*Send the cells to the workers*/
   for (i = 0; i < wc; i++)
   {
     if (i == size - 1 && correctsplit)
@@ -116,26 +119,23 @@ void master_send_instructions(int num_cells, int num_squirrels, int size, struct
     data[0] = cells_startID;
     data[1] = cells_endID;
     data[2] = 1;
-
+    /*Assign the IDs of the actors to the registry and send them to the workers*/
     assign_registry(r, workers_cells[i],0, 0,
                     cells_startID, cells_endID, 1);
-
     MPI_Send(&data, 3, MPI_INT, workers_cells[i], _TAG_INITIAL, MPI_COMM_WORLD);
-    printf("Sending to rank : %d, the data %d %d %d\n ", workers_cells[i], data[0], data[1], data[2]);
+    
+    if (_DEBUG)  printf("Sending to rank : %d, the data %d %d %d\n ", workers_cells[i], data[0], data[1], data[2]);
 
     cells_startID += num_cells / wc;
     cells_endID += num_cells / wc;
   }
 
-  //print_register(*r);
-
-  int msg = 0;
   int success_assign = 0, success_all_assign = 0;
-
-  
   MPI_Reduce(&success_assign, &success_all_assign, 1, MPI_FLOAT, MPI_SUM, _MASTER,  MPI_COMM_WORLD);
- // printf("Success spaniwng of actors %d %d \n", success_all_assign, size);
- // if (success_all_assign == (size))
+  if (_DEBUG){
+      printf("Success spaniwng of actors %d %d \n", success_all_assign, size);
+     print_register(*r); 
+  }
 }
 
 
@@ -152,9 +152,10 @@ void masterlives(Registry_cell *r)
       MPI_Recv(&ID_to_find, 1, MPI_INT, MPI_ANY_SOURCE, _TAG_REGISTRY_CELL, MPI_COMM_WORLD, &status);
       int rank = access_registry(r, 0, ID_to_find);
       MPI_Send(&rank, 1, MPI_INT, status.MPI_SOURCE, _TAG_REGISTRY_CELL, MPI_COMM_WORLD);
-      
-      printf("[Master] Received Cell %d\n", ID_to_find);
-      printf("[Master] Sending to squirrel %d the cell ID:%d\n", rank, ID_to_find);
+      if (_DEBUG){
+        printf("[Master] Received Cell %d\n", ID_to_find);
+        printf("[Master] Sending to squirrel %d the cell ID:%d\n", rank, ID_to_find);
+      }
     }
     else if (status.MPI_TAG == CONTROL_TAG)
       masterStatus = receiving_handle();

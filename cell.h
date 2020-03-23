@@ -13,8 +13,8 @@ struct Cell {
     int seed; 
     float pos_x;
     float pos_y;
-    int influx;
-    int pop;
+    float influx;
+    float pop;
     int (*getCellIDFromPosition) (float, float, struct Cell *);
     int * squirrels_month;
     Day * squirrels_day;

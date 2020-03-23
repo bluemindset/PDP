@@ -56,7 +56,6 @@ int update_cell_day(struct Cell *this)
 int if_squirrels_msg(MPI_Status status)
 {
     int tag = status.MPI_TAG;
-
     if (tag % _TAG_SQUIRRELS == 0)
     {
         return 1;
@@ -67,7 +66,6 @@ int if_squirrels_msg(MPI_Status status)
 int if_clock_msg(MPI_Status status)
 {
     int tag = status.MPI_TAG;
-
     if (tag == _TAG_CLOCK)
     {
         return 1;
@@ -78,9 +76,7 @@ int if_clock_msg(MPI_Status status)
 struct Cell *spawnCells(int startID, int endID, int rank)
 {
     struct Cell *cells = (struct Cell *)malloc((endID - startID) * sizeof(struct Cell));
-
-    int i;
-    int k = 0;
+    int i, k = 0;
     /* Spawn actors*/
     for (i = startID; i < endID; i++)
     {
@@ -89,13 +85,11 @@ struct Cell *spawnCells(int startID, int endID, int rank)
         (cells + k)->pop = 1;
         k++;
     }
-
     return cells;
 }
 
 struct Squirrel *spawnSquirrels(int startID, int endID, int rank)
 {
-
     struct Squirrel *squirrels = (struct Squirrel *)malloc((endID - startID) * sizeof(struct Squirrel));
     int i;
     int k = 0;
@@ -155,59 +149,86 @@ void worker(int rank, struct Registry_cell *registry, int size)
         int data[3];
         MPI_Recv(&data, 3, MPI_INT, _MASTER, _TAG_INITIAL, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         printf("Received Data from Master\n");
- 
         /*
-        Data package 
-        [0] = start ID of squirrel
-        [1] = end ID of squirrel
-        OR
-        [0] = start ID of cell
-        [1] = end ID of cell
-        AND
-        [2] = instatiate squirrels(0) or cells(1) 
+            Data package 
+            [0] = start ID of squirrel
+            [1] = end ID of squirrel
+            OR
+            [0] = start ID of cell
+            [1] = end ID of cell
+            AND
+            [2] = instatiate squirrels(0) or cells(1) 
         */
         /*Instanitate with correct IDs*/
         int success_assign = 1, success_all_assign = 0;
         long seed = 1;
-        int i;
-        if (1)
+        int i, it = 0;
+
+        while (workerStatus)
         {
             if (data[2] == 0)
-            {
-                struct Squirrel *squirrels = spawnSquirrels(data[0], data[1], rank);
+            { /*Initally create the squirrels and assign them* their identities*/
+
                 int num_squirrels = (data[1] - data[0]);
+                int *influx_all[num_squirrels];
+                int *pop_all[num_squirrels];
+                int data_s[num_squirrels][2];
+
+                struct Squirrel *squirrels = spawnSquirrels(data[0], data[1], rank);
+                MPI_Request *rs = (MPI_Request *)malloc(sizeof(MPI_Request) * num_squirrels);
+
+                /*Reduce to Master for a sychronization*/
                 MPI_Reduce(&success_assign, &success_all_assign, 1, MPI_FLOAT, MPI_SUM, _MASTER,
                            MPI_COMM_WORLD);
-                if (1)
+                for (i = 0; i < num_squirrels; i++)
                 {
+                    /*Drop the squirrel somewhere inside the map*/
+                    float new_x, new_y;
+                    squirrelStep(0.0, 0.0, &new_x, &new_y, &seed);
+                    (squirrels + i)->pos_x = new_x;
+                    (squirrels + i)->pos_y = new_y;
+
+                    /*Make squirrels work and collect the two references values*/
+                    rs[i] = squirrels_work(squirrels + i, rank, registry, data_s[i]);
+                }
+
+                /*Wait for all the values to be received*/
+                MPI_Waitall(num_squirrels, rs, MPI_STATUSES_IGNORE);
+
+                if (_DEBUG)
                     for (i = 0; i < num_squirrels; i++)
                     {
-                        /*Drop the squirrel somewhere inside the map*/
-                        float new_x, new_y;
-                        squirrelStep(0.0, 0.0, &new_x, &new_y, &seed);
-                        (squirrels + i)->pos_x = new_x;
-                        (squirrels + i)->pos_y = new_y;
-                        squirrels_work(squirrels + i, rank, registry);
+                        printf("Population %d\n", data_s[i][0]);
+                        printf("Influx %d\n", data_s[i][1]);
                     }
+                /*Squirrels do their routine of life*/
+                for (i = 0; i < num_squirrels; i++)
+                {
+                    squirrel_life(squirrels + i, data_s[i][0],data_s[i][1]);
                 }
+                workerStatus = !should_terminate_worker(0);
             }
             else if (data[2] == 1)
             {
+                /*Initally create the cells and assign them* their identities*/
                 struct Cell *cells = spawnCells(data[0], data[1], rank);
                 int num_cells = (data[1] - data[0]);
+                
+                /*Reduce to Master for a sychronization*/
                 MPI_Reduce(&success_assign, &success_all_assign, 1, MPI_FLOAT, MPI_SUM, _MASTER,
                            MPI_COMM_WORLD);
-                /* Assign into the registry the cells and the squirrels */
-                if (1)
+
+                /*Worker life is determined throught here*/
+                while (workerStatus)
                 {
                     for (i = 0; i < num_cells; i++)
                     {
                         cells_work(cells + i, rank, registry);
                     }
+                    workerStatus = !should_terminate_worker(0);
                 }
             }
         }
-        //workerStatus = workerSleep();
     }
 }
 //  static void send_msg_sq(int _rank, int _tag, MPI_Datatype mpi_type, MPI_Comm comm, struct Squirrel *this)

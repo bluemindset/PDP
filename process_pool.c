@@ -214,39 +214,56 @@ void close_pool()
     }
 }
 
-int workerSleep()
+// int workerSleep()
+// {
+
+//         if (incoming_msg.com == _IDLE)
+//         {
+//             send_command(_SLEEP, _MASTER, 0);
+//             if (req_poll != MPI_REQUEST_NULL)
+//             {
+//                 //printf("ms%d",msg);
+//                 printf("heeee\n");
+//                 MPI_Wait(&req_poll, MPI_STATUS_IGNORE);
+//                 printf("Message%d", incoming_msg.com);
+//             }
+//         }
+//         return recv_handler_worker();
+
+// }
+
+/*Ask gets the values of zero or one*/
+int should_terminate_worker(int ask)
 {
-    if (rank != _MASTER)
+    /* If the worker wants to stop */
+    if (ask)
     {
+        /* If the incoming message from the master is IDLE */
         if (incoming_msg.com == _IDLE)
         {
             send_command(_SLEEP, _MASTER, 0);
             if (req_poll != MPI_REQUEST_NULL)
             {
-                //printf("ms%d",msg);
                 MPI_Wait(&req_poll, MPI_STATUS_IGNORE);
-                printf("Message%d", incoming_msg.com);
+                printf("[Worker] Message from [Master]%d", incoming_msg.com);
             }
         }
+        /*Act after receiving*/
         return recv_handler_worker();
     }
-    else
+    else 
     {
-        handling_exit("Master called itself");
-        return 0;
-    }
-}
-
-int should_terminate_worker()
-{
-    if (req_poll != MPI_REQUEST_NULL)
-    {
-        int flag;
-        /* check if non blocking communication is completed */
-        MPI_Test(&req_poll, &flag, MPI_STATUS_IGNORE);
-        if (flag && incoming_msg.com == _STOP)
+        /*Check if there is a request from the Master to stop*/
+        if (req_poll != MPI_REQUEST_NULL)
         {
-            return 1;
+            int flag;
+            /* Check if request is completed */
+            MPI_Test(&req_poll, &flag, MPI_STATUS_IGNORE);
+            /*If there is a request that carries a stop message then stop*/
+            if (flag && incoming_msg.com == _STOP)
+            {
+                return 1;
+            }
         }
     }
     return 0;

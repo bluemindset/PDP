@@ -27,6 +27,6 @@
  * which also modify the seed
  */
 static void initialiseRNG(long *seed);
-void squirrels_work(struct Squirrel * squirrel, int rank, struct Registry_cell *registry);
+MPI_Request  squirrels_work(struct Squirrel * squirrel, int rank, struct Registry_cell *registry, int  data[2]);
 void cells_work(struct Cell *cell, int rank, struct Registry_cell *registry);
 #endif

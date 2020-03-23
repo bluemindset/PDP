@@ -23,8 +23,8 @@ void send_command(int,int,int);
 int startWorkerProcess();
 int receiving_handle();
 int create_pool();
-int should_terminate_worker();
-int workerSleep();
+
+int should_terminate_worker(int ask);
 void terminate_pool();
 void  init_UEs(int size);
 int startAwaitingTask(int processes_waiting_to_start,int incoming_rank);

@@ -33,19 +33,6 @@ int main(int argc, char *argv[])
   /****Initialize MPI****/
   int num_cells = 16;
   int num_squirrels = 4;
-  
-  /*****Declare TAGS*****/
-  int *tags = (int *)(malloc(sizeof(int) * num_cells * num_squirrels));
-
-  int k,i,j = 0;
-  for (i = 0; i < num_cells; i++)
-  {
-    for (j = 0; j < num_squirrels; j++)
-    {
-      /*For each cell put the squirrel tags*/
-      *(tags + i * num_squirrels + j) = k++;
-    }
-  }
 
   int rank;
   int size;
@@ -85,116 +72,112 @@ static void initialiseRNG(long *seed)
   ran2(seed);
 }
 
-void squirrels_work(struct Squirrel * squirrel, int rank, struct Registry_cell *registry)
+MPI_Request squirrels_work(struct Squirrel *squirrel, int rank, struct Registry_cell *registry, int data_recv[2])
 {
-  int die = 0;
-  float new_x, new_y;
+
+  if (squirrel->health)
+  {
+    float new_x, new_y;
+    long seed = 1;
+    if (_DEBUG)
+      printf("[Worker] Squirrel is ready  %d\n", squirrel->actor.ID);
+
+    /*If squirrel died then skip the rest and flag to 1*/
+
+    /*Squirrel Moves*/
+    squirrelStep(squirrel->pos_x, squirrel->pos_y, &new_x, &new_y, &seed);
+    squirrel->pos_x = new_x;
+    squirrel->pos_y = new_y;
+
+    /*Send health to the stepping cell*/
+    int cellID = getCellFromPosition(squirrel->pos_x, squirrel->pos_y);
+
+    /*Send the Cell Id to master to return the rank back*/
+    MPI_Ssend(&cellID, 1, MPI_INT, _MASTER, _TAG_REGISTRY_CELL, MPI_COMM_WORLD);
+
+    int cell_rank;
+    /*Receive the cell rank from the master*/
+    MPI_Recv(&cell_rank, 1, MPI_INT, _MASTER, _TAG_REGISTRY_CELL, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    /*Create the package and send it*/
+
+    int data[2];
+    data[0] = squirrel->health;
+    data[1] = squirrel->actor.ID;
+    int tag = cellID * _TAG_SQUIRRELS;
+    MPI_Send(&data, 2, MPI_INT, cell_rank, tag, MPI_COMM_WORLD);
+    if (_DEBUG)
+      printf("[Worker] Squirrel %d sending data to cell %d on rank %d with tag %d\n", squirrel->actor.ID, cellID, cell_rank, tag);
+
+    MPI_Request r;
+    if (_DEBUG)
+      printf("[Worker] Squirrel %d issued receive %d on rank %d with tag %d\n", squirrel->actor.ID, cellID, cell_rank, tag);
+    MPI_Irecv(data_recv, 2, MPI_INT, cell_rank, tag, MPI_COMM_WORLD, &r);
+    return r;
+  }
+}
+
+void squirrel_life(struct Squirrel *squirrel, int influx, int pop)
+{
   long seed = 1;
-  printf("[Worker]Squirrel is ready  %d\n",squirrel->actor.ID);
+  /*Update the averages of the its population and influx*/
+  squirrel->update_avgs(influx, pop, squirrel);
+  if (_DEBUG)
+    printf("[Worker] Squirrel %d has avg influx: %f and pop %f \n", squirrel->actor.ID, squirrel->avg_influx, squirrel->pop);
 
-  //while (!die)
-  // {
-  int data[3];
-  float influx;
-  float pop;
+  if (willCatchDisease(squirrel->avg_influx, &seed))
+  {
+    squirrel->health = 0;
+  }
 
-  int debug = 0;
-
-  /*If squirrel died then skip the rest and flag to 1*/
+  //squirrel->willGiveBirth(seed);
   if (!squirrel->health)
   {
     if (willDie(&seed))
-      squirrel->health =0;
+      squirrel->health = 0;
   }
-  /*Squirrel Moves*/
-
-  squirrelStep(squirrel->pos_x, squirrel->pos_y, &new_x, &new_y, &seed);
-
-  squirrel->pos_x = new_x;
-  squirrel->pos_y = new_y;
-
-  /*Send health to the stepping cell*/
-  int cellID = getCellFromPosition(squirrel->pos_x, squirrel->pos_y);
-
-  /*Send the Cell Id to master to return the rank back*/
-  MPI_Ssend(&cellID, 1, MPI_INT, _MASTER, _TAG_REGISTRY_CELL, MPI_COMM_WORLD);
-
-  int cell_rank;
-  /*Receive the cell rank from the master*/
-  MPI_Recv(&cell_rank, 1, MPI_INT, _MASTER, _TAG_REGISTRY_CELL, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-  /*Create the package and send it*/
-  
-  data[0] = squirrel->health;
-  data[1] = squirrel->actor.ID;
-
-  MPI_Send(&data, 2, MPI_INT, cell_rank, cellID*_TAG_SQUIRRELS , MPI_COMM_WORLD);
-  printf("[WORKER] Squirrel %d sending data to cell %d\n\n",squirrel->actor.ID ,cellID);
-  
-  MPI_Status s1;
-
-  int f;
-  MPI_Request r1;
-
-
-  /*Receive message from the cell*/
-  MPI_Iprobe(cell_rank, squirrel->actor.ID*_TAG_CELLS , MPI_COMM_WORLD, &f, &s1);
-  //printf("CELL IS %d RANK IS IN CELL %d\n", cellID, cell_rank);
-  if (f)
-  {
-    float data_r[2];
-    MPI_Recv(&data, 2, MPI_FLOAT, cell_rank,  squirrel->actor.ID*_TAG_CELLS, MPI_COMM_WORLD,&s1);
-    printf("INFLUX %fPOP %f\n", data_r[0], data_r[1]);
-  }
-  //if (debug){
-
-  // squirrel->update_avgs(influx, pop, squirrel);
-
-  //  if (willCatchDisease(squirrel->avg_influx, &seed))
-  //  {
-  //    squirrel->health = 0;
-  //   }
-  //  }
-  // squirrel->willGiveBirth(seed);
-  // }
 }
 
 void cells_work(struct Cell *cell, int rank, struct Registry_cell *registry)
 {
   int forever = 1;
   int seed = 0;
-  int influx,pop,f,s_health;
+  int influx, pop, f, s_health;
   int data[2];
-  
+
   MPI_Status status;
   /*Check if there is message from any other actor and act accordiclty*/
-  
-  MPI_Iprobe(MPI_ANY_SOURCE, cell->actor.ID*_TAG_SQUIRRELS , MPI_COMM_WORLD, &f, &status);
+  int tag = cell->actor.ID * _TAG_SQUIRRELS;
+  //printf("[Worker] Cell:%d issued Probe on Rank:%d with tag %d \n", cell->actor.ID,rank,tag);
+  MPI_Iprobe(MPI_ANY_SOURCE, cell->actor.ID * _TAG_SQUIRRELS, MPI_COMM_WORLD, &f, &status);
 
   /*Check the TAG*/
   if (f)
   {
-  printf("AM IN %d\n\n", cell->actor.ID);
 
-  //  if (if_squirrels_msg(status))
-   // {
+    if (if_squirrels_msg(status))
+    {
       MPI_Request request_inflix;
       MPI_Request request_pop;
       //IMPLEMENT EVERYHTING WITH A TAG
 
       /*Send the inlfux and population values to the incoming squirrel */
       MPI_Recv(&data, 2, MPI_INT, status.MPI_SOURCE, status.MPI_TAG, MPI_COMM_WORLD, &status);
-      float send_data[2] = {(cell->influx), (cell->pop)};
-      MPI_Send(&send_data, 2, MPI_FLOAT, status.MPI_SOURCE, data[1] * _TAG_CELLS , MPI_COMM_WORLD);
+      // printf("[Worker]Cell ID %d Received Data from %d  \n",cell->actor.ID,status.MPI_TAG);
+
+      int send_data[2] = {(cell->influx), (cell->pop)};
+      MPI_Send(&send_data, 2, MPI_INT, status.MPI_SOURCE, status.MPI_TAG, MPI_COMM_WORLD);
+      // printf("[Worker]%d %d \n",send_data[0],send_data[1]);
+      printf("[Worker]Cell ID %d Sending Data to %d  \n", cell->actor.ID, status.MPI_TAG);
+
       /*Receive health value from the squierrel*/
       //data[0] is squirrel health
       //data[1] is the cell ID
 
-      if (data[0])
-        cell->squirrels_day->squirrels_healthy++;
-      else
-        cell->squirrels_day->squirrels_unhealthy++;
-
-  //  }
+      // if (data[0])
+      //   cell->squirrels_day->squirrels_healthy++;
+      // else
+      //   cell->squirrels_day->squirrels_unhealthy++;
+    }
     if (if_clock_msg(status))
     {
       /* Perfome update of the cell influx and population values*/
@@ -216,3 +199,16 @@ void cells_work(struct Cell *cell, int rank, struct Registry_cell *registry)
     //forever = 0; //should_terminate_worker();
   }
 }
+
+// /*****Declare TAGS*****/
+// int *tags = (int *)(malloc(sizeof(int) * num_cells * num_squirrels));
+
+// int k,i,j = 0;
+// for (i = 0; i < num_cells; i++)
+// {
+//   for (j = 0; j < num_squirrels; j++)
+//   {
+//     /*For each cell put the squirrel tags*/
+//     *(tags + i * num_squirrels + j) = k++;
+//   }
+// }
