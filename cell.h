@@ -1,11 +1,6 @@
 #ifndef CELL_H_
 #define CELL_H_
 
-typedef struct Day {
-    int squirrels_healthy;
-    int squirrels_unhealthy;
-    struct Day * nextday;
-}Day;
 
 struct Cell {
     struct Actor actor; 

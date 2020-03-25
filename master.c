@@ -39,7 +39,6 @@ void master_send_instructions(int num_cells, int num_squirrels, int size, struct
             AND
             [2] = instatiate squirrels(0) or cells(1) 
   */
-
   int i =0;
   int *workers_cells;
   int *workers_squirrels;
@@ -139,9 +138,11 @@ void master_send_instructions(int num_cells, int num_squirrels, int size, struct
 }
 
 
-void masterlives(Registry_cell *r)
+void masterlives(Registry_cell *r,int workers_size)
 {
   int masterStatus = 1;
+  struct Clock clock = Clock.new(_MASTER,0);
+
   while (masterStatus)
   {
     MPI_Status status;
@@ -159,6 +160,8 @@ void masterlives(Registry_cell *r)
     }
     else if (status.MPI_TAG == CONTROL_TAG)
       masterStatus = receiving_handle();
+    
+    clock_work(r,workers_size,&clock);
   }
 }
 
