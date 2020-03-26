@@ -164,7 +164,7 @@ void cells_work(struct Cell *cell, int rank, struct Registry_cell *registry)
       int send_data[2] = {(cell->influx), (cell->pop)};
       
       /*Send the inlfux and population values to the incoming squirrel */
-      MPI_Recv(&data, 2, MPI_INT, status.MPI_SOURCE, status.MPI_TAG, MPI_COMM_WORLD, &status);
+      MPI_Recv(&recv_data, 2, MPI_INT, status.MPI_SOURCE, status.MPI_TAG, MPI_COMM_WORLD, &status);
       // printf("[Worker]Cell ID %d Received Data from %d  \n",cell->actor.ID,status.MPI_TAG);
 
       MPI_Send(&send_data, 2, MPI_INT, status.MPI_SOURCE, status.MPI_TAG, MPI_COMM_WORLD);
@@ -177,27 +177,32 @@ void cells_work(struct Cell *cell, int rank, struct Registry_cell *registry)
       //data[1] is the cell ID
 
        if (recv_data[0])
-         cell->squirrels_day->squirrels_healthy++;
+         cell->squirrels_healthy++;
        else
-        cell->squirrels_day->squirrels_unhealthy++;
+         cell->squirrels_unhealthy++;
+      printf("[Worker]Cell ID %d Sending Data to %d  \n", cell->actor.ID, status.MPI_TAG);
+
     }
     if (if_clock_msg(status))
     {
       /* Perfome update of the cell influx and population values*/
       /*This means that a day passed and the squirrels have to be updated*/
-      update_cell_day(cell);
-      int day;
-      MPI_Recv(&day, 1, MPI_INT, MPI_ANY_SOURCE, _TAG_CLOCK, MPI_COMM_WORLD, &status);
-
-      if (day > _DAYS_POP)
-      {
-        chronicle(&cell->squirrels_day, 0, 0);
-        erase_day(cell->squirrels_day);
-      }
-      else
-      {
-        chronicle(&cell->squirrels_day, 0, 0);
-      }
+      
+      int data_send[5];
+      int data_recv[2];
+      data_send[0]= cell->pop;
+      data_send[1]= cell->influx;
+      data_send[2]= cell->squirrels_healthy;
+      data_send[3]= cell->squirrels_healthy;
+      data_send[4] =cell->actor.ID;
+      int k; 
+      MPI_Recv(&k, 1, MPI_INT, _MASTER, _TAG_CLOCK, MPI_COMM_WORLD, &status);
+      MPI_Send(&data_send,5,MPI_INT, _MASTER, _TAG_CLOCK+cell->actor.ID,MPI_COMM_WORLD);
+      MPI_Recv(&data_recv,2,MPI_INT, _MASTER, _TAG_CLOCK+cell->actor.ID,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+      
+      /*Update individual cell data*/
+      cell->influx = data_recv[0];
+      cell->pop = data_recv[1];
     }
     //forever = 0; //should_terminate_worker();
   }

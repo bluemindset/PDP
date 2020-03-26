@@ -3,11 +3,12 @@
 
 
 typedef struct Day {
-    int squirrels_healthy;
-    int squirrels_unhealthy;
+    int * squirrels_healthy;
+    int * squirrels_unhealthy;
     float avg_influx; 
     float avg_pop;
     struct Day * nextday;
+    int ID;
 }Day;
 
 struct Clock {
@@ -25,5 +26,6 @@ extern const struct ClockClass{
 
 void clock_work();
 void delay(unsigned int secs);
+void update_cells(struct Clock * clock,int num_cells);
 
 #endif

@@ -8,7 +8,7 @@
 /********************************************************************/
 #define _TAG_SQUIRRELS 6
 #define _TAG_CELLS 2
-#define _TAG_CLOCK 3
+#define _TAG_CLOCK 1000
 #define _TAG_INITIAL 4
 #define _TAG_REGISTRY_CELL 5
 

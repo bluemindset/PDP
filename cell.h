@@ -12,6 +12,8 @@ struct Cell {
     float pop;
     int (*getCellIDFromPosition) (float, float, struct Cell *);
     int * squirrels_month;
+    int squirrels_healthy;
+    int squirrels_unhealthy;
     Day * squirrels_day;
     int c;
 };
