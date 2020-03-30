@@ -14,7 +14,7 @@ int update_cell_day(struct Cell *this);
 
 int if_squirrels_msg(MPI_Status status);
 
-int if_clock_msg(MPI_Status status);
+int if_clock_msg(MPI_Status status,int cellID);
 
 /*************************ACTOR SPAWN********************************/
 /********************************************************************/
@@ -25,7 +25,7 @@ struct Squirrel *spawnSquirrels(int startID, int endID, int rank);
 /********************************************************************/
 void erase_day(struct Day *lastday);
 int length(struct Day *head);
-void chronicle(struct Day **lastday, int healthy_s, int unhealthy_s,float avg_influx, float avg_pop);
+void chronicle(struct Day **lastday, int *healthy_s, int *unhealthy_s, float avg_influx, float avg_pop, int cells);
 
 
 #endif

@@ -8,10 +8,10 @@
 /***************************ACTORS***********************************/
 /********************************************************************/
 #include "actor.h"
+#include "registry.h"
 #include "cell.h"
 #include "clock.h"
 #include "squirrel.h"
-#include "registry.h"
 /*************************PROCESS************************************/
 /********************************************************************/
 #include "process_pool.h"
@@ -70,7 +70,6 @@ void print_register(struct Registry_cell *head)
   int i = 0;
   while (current != NULL)
   {
-      
       while (current->num_c > i)
       {
         printf("R%d - Cell ID%d\n", current->rank, current->actors_ID[i]);

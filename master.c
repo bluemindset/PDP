@@ -11,10 +11,10 @@
 /***************************ACTORS***********************************/
 /********************************************************************/
 #include "actor.h"
-#include "cell.h"
-#include "clock.h"
-#include "squirrel.h"
 #include "registry.h"
+#include "clock.h"
+#include "cell.h"
+#include "squirrel.h"
 /*************************PROCESS************************************/
 /********************************************************************/
 #include "process_pool.h"
@@ -137,7 +137,6 @@ void master_send_instructions(int num_cells, int num_squirrels, int size, struct
   }
 }
 
-
 void masterlives(Registry_cell *r,int workers_size)
 {
   int masterStatus = 1;
@@ -145,22 +144,32 @@ void masterlives(Registry_cell *r,int workers_size)
 
   while (masterStatus)
   {
+    /* If the master receives any message from workers it 
+    evaluates it */
     MPI_Status status;
     MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+    
+    /* If an actor wants access to the registry cell
+      for grabbing anothers actor ID in order to communicate
+    */
     if (status.MPI_TAG == _TAG_REGISTRY_CELL)
     {
+      /* Receive the actor rank and sent back the ID that its looking for*/
       int ID_to_find;
       MPI_Recv(&ID_to_find, 1, MPI_INT, MPI_ANY_SOURCE, _TAG_REGISTRY_CELL, MPI_COMM_WORLD, &status);
       int rank = access_registry(r, 0, ID_to_find);
       MPI_Send(&rank, 1, MPI_INT, status.MPI_SOURCE, _TAG_REGISTRY_CELL, MPI_COMM_WORLD);
+      
       if (_DEBUG){
         printf("[Master] Received Cell %d\n", ID_to_find);
         printf("[Master] Sending to squirrel %d the cell ID:%d\n", rank, ID_to_find);
       }
+
     }
+    /* Else if it because it is about the controling the process (stop, sleep ,etc)*/ 
     else if (status.MPI_TAG == CONTROL_TAG)
       masterStatus = receiving_handle();
-    
+    /* Tick the clock by one day */
     clock_work(r,workers_size,&clock);
   }
 }

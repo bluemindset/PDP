@@ -24,8 +24,7 @@ extern const struct ClockClass{
 
 
 
-void clock_work();
+void clock_work(Registry_cell *r, int workers_size, struct Clock *clock);
 void delay(unsigned int secs);
-void update_cells(struct Clock * clock,int num_cells);
 
 #endif

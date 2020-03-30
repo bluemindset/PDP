@@ -12,9 +12,9 @@
 /********************************************************************/
 #include "actor.h"
 #include "cell.h"
+#include "registry.h"
 #include "clock.h"
 #include "squirrel.h"
-#include "registry.h"
 /*************************PROCESS************************************/
 /********************************************************************/
 #include "process_pool.h"
@@ -47,10 +47,10 @@ int if_squirrels_msg(MPI_Status status)
     return 0;
 }
 
-int if_clock_msg(MPI_Status status)
+int if_clock_msg(MPI_Status status,int cellID)
 {
-    int tag = status.MPI_TAG;
-    if (tag >= _TAG_CLOCK)
+
+    if (status.MPI_TAG == _TAG_CLOCK+cellID)
     {
         return 1;
     }
@@ -65,8 +65,7 @@ struct Cell *spawnCells(int startID, int endID, int rank)
     for (i = startID; i < endID; i++)
     {
         *(cells + k) = Cell.new(rank, i, 0.0, 0.0);
-        (cells + k)->influx = 1;
-        (cells + k)->pop = 1;
+       
         k++;
     }
     return cells;
@@ -120,11 +119,11 @@ void chronicle(struct Day **lastday, int *healthy_s, int *unhealthy_s, float avg
     for (i = 0; i < cells; i++)
     {
         midnight->squirrels_healthy[i] = healthy_s[i];
-        midnight->squirrels_unhealthy = unhealthy_s[i];
+        midnight->squirrels_unhealthy[i] = unhealthy_s[i];
     }
     midnight->avg_influx = avg_influx;
     midnight->avg_pop = avg_pop;
-
+    midnight->ID = (*lastday)->ID+1;
     midnight->nextday = *lastday;
     *lastday = midnight;
 }
