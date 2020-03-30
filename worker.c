@@ -47,10 +47,10 @@ int if_squirrels_msg(MPI_Status status)
     return 0;
 }
 
-int if_clock_msg(MPI_Status status,int cellID)
+int if_clock_msg(MPI_Status status, int cellID)
 {
 
-    if (status.MPI_TAG == _TAG_CLOCK+cellID)
+    if (status.MPI_TAG == _TAG_CLOCK + cellID)
     {
         return 1;
     }
@@ -65,7 +65,7 @@ struct Cell *spawnCells(int startID, int endID, int rank)
     for (i = startID; i < endID; i++)
     {
         *(cells + k) = Cell.new(rank, i, 0.0, 0.0);
-       
+
         k++;
     }
     return cells;
@@ -121,9 +121,9 @@ void chronicle(struct Day **lastday, int *healthy_s, int *unhealthy_s, float avg
         midnight->squirrels_healthy[i] = healthy_s[i];
         midnight->squirrels_unhealthy[i] = unhealthy_s[i];
     }
-    midnight->avg_influx = avg_influx;
-    midnight->avg_pop = avg_pop;
-    midnight->ID = (*lastday)->ID+1;
+    //midnight->avg_influx = avg_influx;
+    //midnight->avg_pop = avg_pop;
+    midnight->ID = (*lastday)->ID + 1;
     midnight->nextday = *lastday;
     *lastday = midnight;
 }
@@ -186,13 +186,13 @@ void worker(int rank, struct Registry_cell *registry, int size)
 
             /*Wait for all the values to be received*/
             MPI_Waitall(num_squirrels, rs, MPI_STATUSES_IGNORE);
-
-            if (_DEBUG)
-                for (i = 0; i < num_squirrels; i++)
-                {
-                    printf("Population %d\n", data_cell[i][0]);
-                    printf("Influx %d\n", data_cell[i][1]);
-                }
+            //printf("dddddddd\n");
+            //if (_DEBUG)
+            for (i = 0; i < num_squirrels; i++)
+            {
+                printf("Population %d\n", data_cell[i][0]);
+                printf("Influx %d\n", data_cell[i][1]);
+            }
             /*Squirrels do their routine of life*/
             for (i = 0; i < num_squirrels; i++)
             {
@@ -212,13 +212,94 @@ void worker(int rank, struct Registry_cell *registry, int size)
                    MPI_COMM_WORLD);
 
         /*Worker life is determined throught here*/
-        while (workerStatus)
+        int day = 0, ask = 0;
+        int clock_msg = 1;
+        int work = 0;
+        int cellID;
+        int s = 1;
+        MPI_Request rs[num_cells];
+        MPI_Request rr[num_cells];
+
+        while (should_terminate_worker(ask))
         {
-            for (i = 0; i < num_cells; i++)
+            int f;
+            MPI_Status status;
+            int move_on = 0;
+            int k = 0;
+
+            if (!ask)
             {
-                cells_work(cells + i, rank, registry);
+                while (move_on < num_cells)
+                {
+                    MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &f, &status);
+                    if (f)
+                    {
+                        if (_DEBUG)
+                            printf("[Worker] TAG %d RANK %d \n", status.MPI_TAG, rank);
+                        int recv_data[2];
+
+                        if (status.MPI_TAG < _TAG_CLOCK)
+                        {
+                            work = 1;
+                            MPI_Recv(&recv_data, 2, MPI_INT, status.MPI_SOURCE, status.MPI_TAG, MPI_COMM_WORLD, &status);
+                            cellID = recv_data[1];
+                        }
+                        else if (status.MPI_TAG >= _TAG_CLOCK)
+                        {
+                            work = 2;
+                            cellID = status.MPI_TAG - _TAG_CLOCK;
+                        }
+
+                        MPI_Request rs_tt;
+                        if (work == 1)
+                        {
+                            /*Send the inlfux and population values to the incoming squirrel */
+                            int send_data[2] = {(cells + cellID)->influx, (cells + cellID)->pop};
+
+                            MPI_Send(&send_data, 2, MPI_INT, status.MPI_SOURCE, status.MPI_TAG, MPI_COMM_WORLD);
+                            if (_DEBUG)
+                                printf("[Worker]Cell ID %d Sending Data to %d  \n", (cells + cellID)->actor.ID, status.MPI_TAG);
+                            /*Receive health value from the squierrel*/
+                            if (recv_data[0])
+                                (cells + cellID)->day_stats->squirrels_healthy++;
+                            else
+                                (cells + cellID)->day_stats->squirrels_unhealthy++;
+                        }
+                        else if (work == 2)
+                        {
+                            MPI_Irecv(&day, 1, MPI_INT, _MASTER, _TAG_CLOCK + cellID, MPI_COMM_WORLD, &rr[k]);
+                            move_on++;
+                            k++;
+                        }
+                    }
+                }
+
+                move_on = 0;
+                k = 0;
+
+                MPI_Waitall(num_cells, rr, MPI_STATUSES_IGNORE);
+                for (i = 0; i < num_cells; i++)
+                {
+                    int data_send[3];
+                    int data_recv[2];
+
+                    data_send[0] = cells[i].day_stats->squirrels_healthy;
+                    data_send[1] = cells[i].day_stats->squirrels_unhealthy;
+                    data_send[2] = cells[i].actor.ID;
+                    MPI_Isend(&data_send, 3, MPI_INT, _MASTER, _TAG_CLOCK + cells[i].actor.ID, MPI_COMM_WORLD, &rr[i]);
+                    //  printf("PASS Cell ID  %d issued receive %d  \n", _TAG_CLOCK + cells[i].actor.ID);
+                }
+                MPI_Waitall(num_cells, rr, MPI_STATUSES_IGNORE);
+                printf("[Worker] Day is %d rank is %d \n", day, rank);
             }
-            workerStatus = !should_terminate_worker(0);
+            //   update_cells(cells,*day);
+            if (day >= _MAX_DAYS_SIMULATION && s)
+            {
+                ask = 1;s=0;
+                send_command(_COMPLETE, _MASTER, 0);
+            }
+            // MPI_Ssend(&ask, 1, MPI_INT, 0, CONTROL_TAG, MPI_COMM_WORLD);
+           
         }
     }
     // }

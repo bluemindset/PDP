@@ -16,7 +16,7 @@
 /********************************************************************/
 #define _DAYS_INFLUX 5
 #define _DAYS_POP 6
-
+#define  _MAX_DAYS_SIMULATION 2
 /**
  * Initialises the random number generator, call it once at the start of the program on each process. The input
  * value should be negative, non-zero and different on each process, I suggest something like -1-rank where
@@ -28,5 +28,5 @@
  */
 static void initialiseRNG(long *seed);
 MPI_Request  squirrels_work(struct Squirrel * squirrel, int rank, struct Registry_cell *registry, int  data[2]);
-void cells_work(struct Cell *cell, int rank, struct Registry_cell *registry);
+int cells_work(struct Cell *cell, int rank, struct Registry_cell *registry,int * day, MPI_Request * r);
 #endif

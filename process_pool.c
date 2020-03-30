@@ -34,7 +34,7 @@ void send_command(int code, int receiver, int context)
 {
     Message_Command command;
     command.com = code;
-    command.rank = _MASTER;
+
     command.context = context;
     MPI_Send(&command, 1, Message_Control_DataType, receiver, CONTROL_TAG, MPI_COMM_WORLD);
 }
@@ -118,6 +118,7 @@ int receiving_handle()
     int incoming_rank = status.MPI_SOURCE;
     int waiting_processes;
     /*Get the incoming message command*/
+    printf("Master received %d \n",com);
     switch (com)
     {
     case _KILL:
@@ -262,11 +263,11 @@ int should_terminate_worker(int ask)
             /*If there is a request that carries a stop message then stop*/
             if (flag && incoming_msg.com == _STOP)
             {
-                return 1;
+                return 0;
             }
         }
     }
-    return 0;
+    return 1;
 }
 
 /*Handling a workers receiving command*/

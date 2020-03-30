@@ -78,13 +78,13 @@ MPI_Request squirrels_work(struct Squirrel *squirrel, int rank, struct Registry_
 
   if (squirrel->health)
   {
+    delay(10);
     float new_x, new_y;
     long seed = 1;
     if (_DEBUG)
       printf("[Worker] Squirrel is ready  %d\n", squirrel->actor.ID);
 
     /*If squirrel died then skip the rest and flag to 1*/
-
     /*Squirrel Moves*/
     squirrelStep(squirrel->pos_x, squirrel->pos_y, &new_x, &new_y, &seed);
     squirrel->pos_x = new_x;
@@ -137,81 +137,4 @@ void squirrel_life(struct Squirrel *squirrel, int influx, int pop)
     if (willDie(&seed))
       squirrel->health = 0;
   }
-}
-
-void cells_work(struct Cell *cell, int rank, struct Registry_cell *registry)
-{
-  int forever = 1;
-  int seed = 0;
-  int influx, pop, f, s_health;
-
-  MPI_Status status;
-  
-  /*Check if there is message from any other actor and act accordiclty*/
-  MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &f, &status);
-
-  /*Check the TAG*/
-  if (f)
-  {
-    if (!if_squirrels_msg(status))
-    {
-      int tag = cell->actor.ID * _TAG_SQUIRRELS;
-      MPI_Request request_inflix;
-      MPI_Request request_pop;
-      //IMPLEMENT EVERYHTING WITH A TAG
-      int recv_data[2];
-      int send_data[2] = {(cell->influx), (cell->pop)};
-      
-      /*Send the inlfux and population values to the incoming squirrel */
-      MPI_Recv(&recv_data, 2, MPI_INT, status.MPI_SOURCE, status.MPI_TAG, MPI_COMM_WORLD, &status);
-      // printf("[Worker]Cell ID %d Received Data from %d  \n",cell->actor.ID,status.MPI_TAG);
-
-      MPI_Send(&send_data, 2, MPI_INT, status.MPI_SOURCE, status.MPI_TAG, MPI_COMM_WORLD);
-      // printf("[Worker]%d %d \n",send_data[0],send_data[1]);
-      if(_DEBUG)
-        printf("[Worker]Cell ID %d Sending Data to %d  \n", cell->actor.ID, status.MPI_TAG);
-
-      /*Receive health value from the squierrel*/
-       if (recv_data[0])
-         cell->day_stats->squirrels_healthy++;
-       else
-         cell->day_stats->squirrels_unhealthy++;
-
-      if(_DEBUG)   
-        printf("[Worker]Cell ID %d Sending Data to %d  \n", cell->actor.ID, status.MPI_TAG);
-
-    }
-    if (if_clock_msg(status, cell->actor.ID))
-    {
-      /* Perfome update of the cell influx and population values*/
-      /*This means that a day passed and the squirrels have to be updated*/
-      int day; 
-      int data_send[5];
-      int data_recv[2];
-
-      data_send[0]= cell->pop;
-      data_send[1]= cell->influx;
-      data_send[2]= cell->day_stats->squirrels_healthy;
-      data_send[3]= cell->day_stats->squirrels_unhealthy;
-      data_send[4] =cell->actor.ID;
-      delay(3);
-      printf("[Worker]Cell ID %d issued receive %d  \n", rank, status.MPI_TAG);
-      MPI_Recv(&day, 1, MPI_INT, _MASTER, _TAG_CLOCK+cell->actor.ID, MPI_COMM_WORLD, MPI_STATUS_IGNORE );
-    
-      //MPI_Ssend(&data_send,5,MPI_INT, _MASTER, _TAG_CLOCK+cell->actor.ID,MPI_COMM_WORLD);
-      printf("PASSCell ID  %d issued receive %d  \n",  _TAG_CLOCK+cell->actor.ID, status.MPI_TAG);
-      
-      //MPI_Irecv(&data_recv,2,MPI_INT, _MASTER, _TAG_CLOCK+cell->actor.ID,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
-      /* Update the cells by sending them back their influx they need to store*/
-      //update_cells(cell, day);
-      /*Update individual cell data*/
-      /*implement return */
-    }
-    //forever = 0; //should_terminate_worker();
-  }
-}
-
-
-void update_cell(){
-
 }

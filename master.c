@@ -141,17 +141,24 @@ void masterlives(Registry_cell *r,int workers_size)
 {
   int masterStatus = 1;
   struct Clock clock = Clock.new(_MASTER,0);
+  
 
   while (masterStatus)
   {
+    
     /* If the master receives any message from workers it 
     evaluates it */
     MPI_Status status;
     MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-    
+      ///  int n_items;
+
+    //MPI_Get_count(&status, MPI_INT, &n_items);
+    //printf("N %d",n_items);
     /* If an actor wants access to the registry cell
       for grabbing anothers actor ID in order to communicate
     */
+    printf("Stat %d %d\n",status.MPI_SOURCE,status.MPI_TAG);
+
     if (status.MPI_TAG == _TAG_REGISTRY_CELL)
     {
       /* Receive the actor rank and sent back the ID that its looking for*/
@@ -167,10 +174,14 @@ void masterlives(Registry_cell *r,int workers_size)
 
     }
     /* Else if it because it is about the controling the process (stop, sleep ,etc)*/ 
-    else if (status.MPI_TAG == CONTROL_TAG)
+    if (status.MPI_TAG == CONTROL_TAG){
+          printf("message\n");
       masterStatus = receiving_handle();
+    }
+
     /* Tick the clock by one day */
-    clock_work(r,workers_size,&clock);
+    if (clock.timeline->ID <= _MAX_DAYS_SIMULATION)
+      clock_work(r,workers_size,&clock);
   }
 }
 
