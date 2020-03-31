@@ -22,8 +22,10 @@
 
 void clock_work(Registry_cell *r, int workers_size, struct Clock *clock)
 {
- 
-  int num_cells = 16; // number of cells
+   /* Clock, one day passes */
+  delay(40);
+  
+  int num_cells = 16;
   int i = 0, j = 0, day = 0, y=0;
   int forever = 1;
   struct Registry_cell *current_r = r;
@@ -53,7 +55,7 @@ void clock_work(Registry_cell *r, int workers_size, struct Clock *clock)
       for (k = 0; k < current_r->num_c; k++)
       {
         /*Send to every worker the cells*/
-        if(_DEBUG)
+     //   if(_DEBUG)
         printf("[Worker]Clock to Cell ID %d %d \n", current_r->rank, _TAG_CLOCK + current_r->actors_ID[k]);
         MPI_Isend(&clock->timeline->ID, 1, MPI_INT, current_r->rank, _TAG_CLOCK + current_r->actors_ID[k], MPI_COMM_WORLD, &rss[y]);
         /*Receive the from the cell*/
@@ -74,16 +76,13 @@ void clock_work(Registry_cell *r, int workers_size, struct Clock *clock)
   MPI_Waitall(num_cells, rss, MPI_STATUSES_IGNORE);
   MPI_Waitall(num_cells, rsr, MPI_STATUSES_IGNORE);
 
-  delay(10);
 
-  /*
-  Receive from each cell
-  
-  a) Cell ID
-  b) Avg population of the cell
-  c) Avg Influx of the cell
-  d) Unhealthy squirrells
-  e) Healthy squirrels
+  /*Receive from each cell
+    a) Cell ID
+    b) Avg population of the cell
+    c) Avg Influx of the cell
+    d) Unhealthy squirrells
+    e) Healthy squirrels
 */
   for (i = 0; i < num_cells; i++)
   {

@@ -95,12 +95,13 @@ void terminate_pool()
     if (rank == _MASTER)
     {
         /* If there is not UEs then terminate the state*/
-
+   
         if (UEs_state != NULL)
             free(UEs_state);
         int i;
         for (i = 0; i < UEs - 1; i++)
         {
+            printf("stop %d\n",i+1);
             send_command(_STOP, i + 1, 0);
         }
         /* Barrier the termination and free the datatype*/
@@ -140,6 +141,7 @@ int receiving_handle()
         /*If run is completed then increament */
         break;
     case _COMPLETE:
+        /*Stop every worker*/
         return 0;
         //AwaitProcess
         break;
@@ -217,7 +219,6 @@ void close_pool()
 
 // int workerSleep()
 // {
-
 //         if (incoming_msg.com == _IDLE)
 //         {
 //             send_command(_SLEEP, _MASTER, 0);
@@ -230,7 +231,6 @@ void close_pool()
 //             }
 //         }
 //         return recv_handler_worker();
-
 // }
 
 /*Ask gets the values of zero or one*/

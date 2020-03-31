@@ -106,7 +106,7 @@ MPI_Request squirrels_work(struct Squirrel *squirrel, int rank, struct Registry_
     data[1] = squirrel->actor.ID;
     int tag = cellID * _TAG_SQUIRRELS;
     MPI_Send(&data, 2, MPI_INT, cell_rank, tag, MPI_COMM_WORLD);
-    if (_DEBUG)
+   // if (_DEBUG)
       printf("[Worker] Squirrel %d sending data to cell %d on rank %d with tag %d\n", squirrel->actor.ID, cellID, cell_rank, tag);
 
     MPI_Request r;
@@ -118,7 +118,7 @@ MPI_Request squirrels_work(struct Squirrel *squirrel, int rank, struct Registry_
   }
 }
 
-void squirrel_life(struct Squirrel *squirrel, int influx, int pop)
+void squirrel_life(struct Squirrel *squirrel, int influx, int pop,int * num_squirrels)
 {
   long seed = 1;
   /*Update the averages of the its population and influx*/
@@ -132,9 +132,10 @@ void squirrel_life(struct Squirrel *squirrel, int influx, int pop)
   }
 
   //squirrel->willGiveBirth(seed);
+  //num_squirrels++
   if (!squirrel->health)
   {
     if (willDie(&seed))
-      squirrel->health = 0;
+      squirrel->health = -1;
   }
 }

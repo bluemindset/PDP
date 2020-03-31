@@ -11,7 +11,7 @@ void masterlives(Registry_cell *r, int workers_size);
 
 void startworkers(int num_workers, int *workers);
 
-void squirrel_life(struct Squirrel *squirrel, int influx, int pop);
+void squirrel_life(struct Squirrel *squirrel, int influx, int pop,int *num_squirrels);
 
 
 #endif
