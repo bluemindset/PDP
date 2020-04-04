@@ -135,12 +135,21 @@ void swap(int *a, int p1, int p2)
 
 void print_stat_squirrels(int *squirrels_IDs_healthy, int *squirrels_IDs_unhealthy, int month, int rank)
 {
-  int i, count = 0;
+  int i,j;
   int healthy=0,unhealthy=0;
   selectionsort(squirrels_IDs_healthy);
   selectionsort(squirrels_IDs_unhealthy);
 
   printf("~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+  for (i = 0; i < _MAX_SQUIRRELS; i++)
+  {
+    for (j = 0; j < _MAX_SQUIRRELS; j++)
+      {
+        if(squirrels_IDs_healthy[i]==squirrels_IDs_unhealthy[j]){
+            squirrels_IDs_healthy[i] =-1;
+        }
+      }
+  }
   for (i = 0; i < _MAX_SQUIRRELS; i++)
   {
     if (squirrels_IDs_healthy[i] != -1)
@@ -161,8 +170,8 @@ void print_stat_squirrels(int *squirrels_IDs_healthy, int *squirrels_IDs_unhealt
     }
   }
 
-  printf("[Worker %d] ~  Month %d ~ Healthy squirrels are:   %d\n ",rank, month ,healthy );
-  printf("[Worker %d] ~  Month %d ~ Intected squirrels are:  %d\n ",rank ,month,unhealthy);
+  printf("[Master %d] ~  Month %d ~ Healthy squirrels are:   %d\n ",rank, month ,healthy );
+  printf("[Master %d] ~  Month %d ~ Intected squirrels are:  %d\n ",rank ,month,unhealthy);
   printf("~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 }
 

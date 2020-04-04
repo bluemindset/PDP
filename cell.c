@@ -39,11 +39,11 @@ static struct Cell new (int rank, int ID, float pos_x, float pos_y)
   cell.actor = Actor.new(rank, ID);
   cell.influx = 0;
   cell.pop = 0;
-  
+
   //cell.month_stats = (struct month_stat *)malloc(sizeof(struct month_stat));
   //cell.squirrels_healthy = (int *)calloc( _MAX_monthS_SIMULATION,sizeof(int));
   //cell.squirrels_unhealthy = (int *)calloc( _MAX_monthS_SIMULATION,sizeof(int));
- // cell.month_stats->nextstat = NULL;
+  // cell.month_stats->nextstat = NULL;
 
   return cell;
 }
@@ -53,68 +53,52 @@ const struct CellClass Cell = {.new = &new};
  * Returns the id of the cell from its x and y coordinates.
  */
 
-void update_cell(struct Cell *cell, int month, int rank,int * stats,int cellID,int num_cells)
+void update_cell(struct Cell *cell, int month, int rank, int *stats, int cellID, int num_cells)
 {
-  int i, sum = 0;
 
-  
+  int healthy_s_3, healthy_s_2, healthy_s_1;
+  int unhealthy_s_3, unhealthy_s_2, unhealthy_s_1;
 
-  /*Thresholds*/
-  int passinflux = _MONTHS_INFLUX;
-  int passpop = _MONTHS_POP;
-  int influx = 0;
-  int pop = 0;
-  
-  //printf("month %d Squirrels in cells %d  rank: %d \n", month, cur_s->squirrels_healthy, rank);
-
-  /*Append the list of the months*/
-
-  /* If this is not the first month*/
-  if (month != 0)
-  { /* If the month is less than the thresholds*/
-    if (passpop > month)
-      passpop = month;
-    if (passinflux > month)
-      passinflux = month;
-  }
-  else
+  if (month == 0)
   {
-    passpop = 1;
-    passinflux = 1;
+    /*Healthy and Unhealthy squirrels of THIS month that passed*/
+    unhealthy_s_1 = stats[(0 * num_cells * 2 * _MAX_MONTHS_SIMULATION) + (cellID * _MAX_MONTHS_SIMULATION) + month];
+    healthy_s_1 = stats[(1 * num_cells * 2 * _MAX_MONTHS_SIMULATION) + (cellID * _MAX_MONTHS_SIMULATION) + month];
+    /*Influx is calculated by this month that passed*/
+    cell->influx = unhealthy_s_1 + unhealthy_s_2;
+    /*Population is calculated by this month that passed*/
+    cell->pop = healthy_s_1 + healthy_s_2;
   }
-  int month_index=0;
-      //printf("Population1 %f, Influx %f month %d \n", cell->influx, cell->pop,month);
- 
-
-  while (month > month_index && passpop > 0 && month>0)
+  else if (month == 1)
   {
-      int unhealthy_s=  stats[(0 * num_cells *2* _MAX_MONTHS_SIMULATION )+ (cellID * _MAX_MONTHS_SIMULATION )+ month_index];
-      int healthy_s=  stats[(1 * num_cells *2* _MAX_MONTHS_SIMULATION )+ (cellID * _MAX_MONTHS_SIMULATION) + month_index];
-  //    printf("UNHEALT%d\n",unhealthy_s);
-   //   printf("HEALT %d\n",healthy_s);
-   // printf("month %d, month %d Squirrels in cells %d  rank: %d \n", d,month, cur_s->squirrels_healthy, rank);
-    if (passinflux > 0)
-    {
-      influx +=   unhealthy_s;
+    /*Healthy and Unhealthy squirrels of the PREVIOUS month that passed*/
+    unhealthy_s_1 = stats[(0 * num_cells * 2 * _MAX_MONTHS_SIMULATION) + (cellID * _MAX_MONTHS_SIMULATION) + month];
+    unhealthy_s_2 = stats[(0 * num_cells * 2 * _MAX_MONTHS_SIMULATION) + (cellID * _MAX_MONTHS_SIMULATION) + month - 1];
+    
+    healthy_s_1 = stats[(1 * num_cells * 2 * _MAX_MONTHS_SIMULATION) + (cellID * _MAX_MONTHS_SIMULATION) + month];
+    healthy_s_2 = stats[(1 * num_cells * 2 * _MAX_MONTHS_SIMULATION) + (cellID * _MAX_MONTHS_SIMULATION) + month - 1];
 
-      pop += healthy_s+unhealthy_s;
+    /* VIRUS can only live without a host for two months in the environment*/
+    cell->influx = unhealthy_s_1 + unhealthy_s_2;
+    /*Population is calculated by the last two months*/
+    cell->pop = healthy_s_1 + healthy_s_2;
+  }
+  else if (month >= 2)
+  {
+    /*Healthy and Unhealthy squirrels of TWO month AGO that passed*/
+    unhealthy_s_1 = stats[(0 * num_cells * 2 * _MAX_MONTHS_SIMULATION) + (cellID * _MAX_MONTHS_SIMULATION) + month];
+    unhealthy_s_2 = stats[(0 * num_cells * 2 * _MAX_MONTHS_SIMULATION) + (cellID * _MAX_MONTHS_SIMULATION) + month - 1];
+    
+    healthy_s_1 = stats[(1 * num_cells * 2 * _MAX_MONTHS_SIMULATION) + (cellID * _MAX_MONTHS_SIMULATION) + month];
+    healthy_s_2 = stats[(1 * num_cells * 2 * _MAX_MONTHS_SIMULATION) + (cellID * _MAX_MONTHS_SIMULATION) + month - 1];
+    healthy_s_3 = stats[(1 * num_cells * 2 * _MAX_MONTHS_SIMULATION) + (cellID * _MAX_MONTHS_SIMULATION) + month - 2];
 
-      passpop--;
-      passinflux--;
-    }
-    else if (passpop > 0)
-    {
-      pop += healthy_s+unhealthy_s;
-      passpop--;
-    }
-    month_index++;
+    /* VIRUS can only live without a host for two months in the environment if no unhealthy squirrel step in*/
+    cell->influx = unhealthy_s_1 + unhealthy_s_2;
+    /*Population is calculated by the last three months*/
+    cell->pop = healthy_s_1 + healthy_s_2 + healthy_s_3;
   }
 
-  cell->pop = pop;
-  cell->influx = influx;
-  //cell->squirrels_healthy[month] = 0;
-  if (0)
-      printf("Population %d, Influx %d month %d CellID %d rank %d \n",  cell->pop,cell->influx,month,cellID,rank);
-  //cell->squirrels_unhealthy[month] = 0;
-  
+  if (_DEBUG)
+    printf("Population %d, Influx %d month %d CellID %d rank %d \n", cell->pop, cell->influx, month, cellID, rank);
 }

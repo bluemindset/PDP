@@ -55,7 +55,6 @@ int main(int argc, char *argv[])
   }
   else if (statusCode == 2)
   {
-    //08000468687
     /*Worker determines the jobs to give not other workers*/
     startworkers(size - 1, workers);
 

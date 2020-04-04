@@ -12,11 +12,12 @@
 #define _TAG_INITIAL 4
 #define _TAG_REGISTRY_CELL 5
 #define _MAX_SQUIRRELS 200
-#define _TAG_STATS 1
+#define _TAG_STATS_UNHEALTHY 1
+#define _TAG_STATS_HEALTHY 0
 /**************************MONTHS**************************************/
 /********************************************************************/
-#define _MONTHS_INFLUX 5
-#define _MONTHS_POP 6
+#define _MONTHS_INFLUX 2
+#define _MONTHS_POP 3
 #define  _MAX_MONTHS_SIMULATION 4
 #define UNHEALTHY_SQUIRRELS 4
 #define MONTH_IN_SEC 2
