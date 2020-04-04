@@ -19,7 +19,7 @@ int if_clock_msg(MPI_Status status,int cellID);
 /*************************ACTOR SPAWN********************************/
 /********************************************************************/
 struct Cell *spawnCells(int startID, int endID, int rank);
-struct Squirrel *spawnSquirrels(int startID, int endID, int rank);
+struct Squirrel *spawnSquirrels(int startID, int endID, int rank,int unhealthy);
 
 /*************************DAYS MANIPULATION***************************/
 /********************************************************************/

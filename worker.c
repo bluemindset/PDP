@@ -74,16 +74,21 @@ struct Cell *spawnCells(int startID, int endID, int rank)
     return cells;
 }
 
-struct Squirrel *spawnSquirrels(int startID, int endID, int rank)
+struct Squirrel *spawnSquirrels(int startID, int endID, int rank,int unhealthy)
 {
     struct Squirrel *squirrels = (struct Squirrel *)malloc((endID - startID) * sizeof(struct Squirrel));
     int i;
     int k = 0;
     /* Spawn actors*/
-    for (i = startID; i < endID; i++)
+    for (i = 0; i < (endID-startID); i++)
     {
         *(squirrels + k) = Squirrel.new(rank, i, 0, 5000, 0.0, 0.0);
         k++;
+    }
+    
+    for (i = 0; i < unhealthy; i++)
+    {
+        (squirrels + i)->health =0;
     }
 
     return squirrels;
@@ -159,18 +164,17 @@ void worker(int rank, struct Registry_cell *registry, int size)
     { /*Initally create the squirrels and assign them* their identities*/
 
         int num_squirrels = (data[1] - data[0]);
-        int *influx_all[num_squirrels];
-        int *pop_all[num_squirrels];
-        int data_cell[num_squirrels][2];
+
+        int data_cell[num_squirrels*num_squirrels][2];
 
         /* Spawn the squirrels on the worker*/
-        struct Squirrel *squirrels = spawnSquirrels(data[0], data[1], rank);
-        MPI_Request *rs = (MPI_Request *)malloc(sizeof(MPI_Request) * num_squirrels);
+        struct Squirrel *squirrels = spawnSquirrels(data[0], data[1], rank,4); //TODO Change unhelathy
 
         /*Reduce to master for a sychronization, for a succesful spawning*/
         MPI_Reduce(&success_assign, &success_all_assign, 1, MPI_FLOAT, MPI_SUM, _MASTER,
                    MPI_COMM_WORLD);
 
+        MPI_Request *rs = (MPI_Request *)malloc(sizeof(MPI_Request) * num_squirrels * num_squirrels);
         while (alive)
         {
             alive = should_terminate_worker(0);
@@ -193,7 +197,7 @@ void worker(int rank, struct Registry_cell *registry, int size)
                         /* How active is this group of squirrels? 
                         Each month the activity of the squirrels changes.
                         Some become more active while other rest more!*/
-                        delay(10);
+                        delay(1);
                         /*Make squirrel work and collect the two references values
                         The function here issues an Ireceive for gathering information for
                         every cell.
@@ -224,18 +228,22 @@ void worker(int rank, struct Registry_cell *registry, int size)
             if (1)
                 for (i = 0; i < num_squirrels; i++)
                 {
-                    printf("Population %d\n", data_cell[i][0]);
-                    printf("Influx %d\n", data_cell[i][1]);
+                    printf("Influx %d\n", data_cell[i][0]);
+                    printf("Population %d\n", data_cell[i][1]);
                 }
-            if (alive)
+            if (alive){
                 /*Squirrels do their routine of life (death, born, catch disease)*/
                 for (i = 0; i < num_squirrels; i++)
                 {
-                    squirrel_life(squirrels + i, data_cell[i][0], data_cell[i][1], &num_squirrels);
+                    if ( squirrel_life(squirrels + i, data_cell[i][0], data_cell[i][1], &num_squirrels,rank)){
+                        printf("num_squ %d\n",num_squirrels);
+                       *(squirrels + num_squirrels-1) = Squirrel.new(rank, num_squirrels,0,seed,0.0,0.0); 
+                    }
+                   
                 }
+            }
         }
     }
-
     /* The worker handles cells*/
     else if (data[2] == 1)
     {

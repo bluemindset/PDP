@@ -27,7 +27,8 @@ extern const struct SquirrelClass{
     struct Squirrel (*new)(int rank, int ID, int steps,int seed,float pos_x,float pos_y);
 } Squirrel;
 
-
+MPI_Request  squirrels_work(struct Squirrel * squirrel, int rank, struct Registry_cell *registry, int  data[2],int * alive);
+int squirrel_life(struct Squirrel *squirrel, int influx, int pop, int *num_squirrels,int rank);
 
 /*Update the averages of the squirrels*/
 static void update_avgs(int influx, int pop, struct Squirrel *this);
