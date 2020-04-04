@@ -40,10 +40,10 @@ static struct Cell new (int rank, int ID, float pos_x, float pos_y)
   cell.influx = 0;
   cell.pop = 0;
   
-  //cell.day_stats = (struct Day_stat *)malloc(sizeof(struct Day_stat));
-  //cell.squirrels_healthy = (int *)calloc( _MAX_DAYS_SIMULATION,sizeof(int));
-  //cell.squirrels_unhealthy = (int *)calloc( _MAX_DAYS_SIMULATION,sizeof(int));
- // cell.day_stats->nextstat = NULL;
+  //cell.month_stats = (struct month_stat *)malloc(sizeof(struct month_stat));
+  //cell.squirrels_healthy = (int *)calloc( _MAX_monthS_SIMULATION,sizeof(int));
+  //cell.squirrels_unhealthy = (int *)calloc( _MAX_monthS_SIMULATION,sizeof(int));
+ // cell.month_stats->nextstat = NULL;
 
   return cell;
 }
@@ -53,46 +53,46 @@ const struct CellClass Cell = {.new = &new};
  * Returns the id of the cell from its x and y coordinates.
  */
 
-void update_cell(struct Cell *cell, int day, int rank,int * stats,int cellID,int num_cells)
+void update_cell(struct Cell *cell, int month, int rank,int * stats,int cellID,int num_cells)
 {
   int i, sum = 0;
 
   
 
   /*Thresholds*/
-  int passinflux = _DAYS_INFLUX;
-  int passpop = _DAYS_POP;
+  int passinflux = _MONTHS_INFLUX;
+  int passpop = _MONTHS_POP;
   int influx = 0;
   int pop = 0;
   
-  //printf("day %d Squirrels in cells %d  rank: %d \n", day, cur_s->squirrels_healthy, rank);
+  //printf("month %d Squirrels in cells %d  rank: %d \n", month, cur_s->squirrels_healthy, rank);
 
   /*Append the list of the months*/
 
-  /* If this is not the first day*/
-  if (day != 0)
-  { /* If the day is less than the thresholds*/
-    if (passpop > day)
-      passpop = day;
-    if (passinflux > day)
-      passinflux = day;
+  /* If this is not the first month*/
+  if (month != 0)
+  { /* If the month is less than the thresholds*/
+    if (passpop > month)
+      passpop = month;
+    if (passinflux > month)
+      passinflux = month;
   }
   else
   {
     passpop = 1;
     passinflux = 1;
   }
-  int day_index=0;
-      //printf("Population1 %f, Influx %f Day %d \n", cell->influx, cell->pop,day);
+  int month_index=0;
+      //printf("Population1 %f, Influx %f month %d \n", cell->influx, cell->pop,month);
  
 
-  while (day > day_index && passpop > 0 && day>0)
+  while (month > month_index && passpop > 0 && month>0)
   {
-      int unhealthy_s=  stats[(0 * num_cells *2* _MAX_DAYS_SIMULATION )+ (cellID * _MAX_DAYS_SIMULATION )+ day_index];
-      int healthy_s=  stats[(1 * num_cells *2* _MAX_DAYS_SIMULATION )+ (cellID * _MAX_DAYS_SIMULATION) + day_index];
+      int unhealthy_s=  stats[(0 * num_cells *2* _MAX_MONTHS_SIMULATION )+ (cellID * _MAX_MONTHS_SIMULATION )+ month_index];
+      int healthy_s=  stats[(1 * num_cells *2* _MAX_MONTHS_SIMULATION )+ (cellID * _MAX_MONTHS_SIMULATION) + month_index];
   //    printf("UNHEALT%d\n",unhealthy_s);
    //   printf("HEALT %d\n",healthy_s);
-   // printf("Day %d, day %d Squirrels in cells %d  rank: %d \n", d,day, cur_s->squirrels_healthy, rank);
+   // printf("month %d, month %d Squirrels in cells %d  rank: %d \n", d,month, cur_s->squirrels_healthy, rank);
     if (passinflux > 0)
     {
       influx +=   unhealthy_s;
@@ -107,14 +107,14 @@ void update_cell(struct Cell *cell, int day, int rank,int * stats,int cellID,int
       pop += healthy_s+unhealthy_s;
       passpop--;
     }
-    day_index++;
+    month_index++;
   }
 
   cell->pop = pop;
   cell->influx = influx;
-  //cell->squirrels_healthy[day] = 0;
+  //cell->squirrels_healthy[month] = 0;
   if (0)
-      printf("Population %d, Influx %d Day %d CellID %d rank %d \n",  cell->pop,cell->influx,day,cellID,rank);
-  //cell->squirrels_unhealthy[day] = 0;
+      printf("Population %d, Influx %d month %d CellID %d rank %d \n",  cell->pop,cell->influx,month,cellID,rank);
+  //cell->squirrels_unhealthy[month] = 0;
   
 }

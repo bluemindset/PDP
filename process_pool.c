@@ -38,15 +38,7 @@ void send_command(int code, int receiver, int context)
     command.context = context;
     MPI_Send(&command, 1, Message_Control_DataType, receiver, CONTROL_TAG, MPI_COMM_WORLD);
 }
-// void heartbeat()
-// {
-//     // /* Master periodically sent messages to workers to check if they are alive*/
 
-//     // int MPI_Isend(const void *buf, int count, MPI_Datatype datatype, int dest, int tag,
-//     //           MPI_Comm comm, MPI_Request * request)
-//     int alive = 1;
-//     MPI_ISend(&alive, 1, MPI_INT, worker, PP);
-// }
 
 int check_resources()
 {
@@ -95,19 +87,19 @@ void terminate_pool()
     if (rank == _MASTER)
     {
         /* If there is not UEs then terminate the state*/
-   
-        //if (UEs_state != NULL)
-       //     free(UEs_state);
+
+        if (UEs_state != NULL)
+            free(UEs_state);
         int i;
         for (i = 0; i < UEs - 1; i++)
         {
-            printf("stop %d\n",i+1);
+            printf("[Master] Stopping workers[%d]\n", i + 1);
             send_command(_STOP, i + 1, 0);
         }
         /* Barrier the termination and free the datatype*/
     }
     MPI_Barrier(MPI_COMM_WORLD);
- //   MPI_Type_free(&Message_Control_DataType);
+    //   MPI_Type_free(&Message_Control_DataType);
 }
 
 /*Wait forever and handle the receives  (Master Poll)*/
@@ -119,7 +111,6 @@ int receiving_handle()
     int incoming_rank = status.MPI_SOURCE;
     int waiting_processes;
     /*Get the incoming message command*/
-    printf("Master received %d \n",com);
     switch (com)
     {
     case _KILL:
@@ -246,13 +237,12 @@ int should_terminate_worker(int ask)
             if (req_poll != MPI_REQUEST_NULL)
             {
                 MPI_Wait(&req_poll, MPI_STATUS_IGNORE);
-                printf("[Worker] Message from [Master]%d", incoming_msg.com);
             }
         }
         /*Act after receiving*/
         return recv_handler_worker();
     }
-    else 
+    else
     {
         /*Check if there is a request from the Master to stop*/
         if (req_poll != MPI_REQUEST_NULL)
@@ -263,7 +253,7 @@ int should_terminate_worker(int ask)
             /*If there is a request that carries a stop message then stop*/
             if (flag && incoming_msg.com == _STOP)
             {
-                printf("HERE %d \n",rank);
+                printf("[Worker %d] Master commanded me to stop \n", rank);
                 return 0;
             }
         }
@@ -276,16 +266,16 @@ static int recv_handler_worker()
 {
     if (incoming_msg.com == _IDLE)
     {
-        printf("[Worker] Soldier %d is ready  \n", rank);
+        printf("[Worker] Worker %d is ready  \n", rank);
         /*Issue a non blocking receive so that it starts work when master orders*/
         MPI_Irecv(&incoming_msg, 1, Message_Control_DataType, _MASTER, CONTROL_TAG, MPI_COMM_WORLD, &req_poll);
-        printf("[Worker] Heart-Beat ready!  \n", rank);
+        printf("[Worker] Heart-Beat with [Master] communication established!  \n", rank);
         return 1;
     }
     /* Stop the worker if possible */
     else if (incoming_msg.com == _STOP)
     {
-        printf("[Worker] Process %d commanded to stop\n", rank);
+        printf("[Worker %d] Master commanded me to stop \n", rank);
         return 0;
     }
     else

@@ -1,5 +1,5 @@
 
-int  cells_work(struct Cell *cell, int rank, struct Registry_cell *registry,int * day, MPI_Request * r,int work)
+int  cells_work(struct Cell *cell, int rank, struct Registry_cell *registry,int * month, MPI_Request * r,int work)
 {
   int forever = 1;
   int seed = 0;
@@ -29,9 +29,9 @@ int  cells_work(struct Cell *cell, int rank, struct Registry_cell *registry,int 
 
       /*Receive health value from the squierrel*/
        if (recv_data[0])
-         cell->day_stats->squirrels_healthy++;
+         cell->month_stats->squirrels_healthy++;
        else
-         cell->day_stats->squirrels_unhealthy++;
+         cell->month_stats->squirrels_unhealthy++;
 
       if(_DEBUG)   
         printf("[Worker]Cell ID %d Sending Data to %d  \n", cell->actor.ID, status.MPI_TAG);
@@ -40,20 +40,20 @@ int  cells_work(struct Cell *cell, int rank, struct Registry_cell *registry,int 
     if (if_clock_msg(status, cell->actor.ID))
     {
       /* Perfome update of the cell influx and population values*/
-      /*This means that a day passed and the squirrels have to be updated*/
+      /*This means that a month passed and the squirrels have to be updated*/
      
      // delay(3);
      
     //  if(_DEBUG)
     //  printf("[Worker]Cell ID %d issued receive %d  \n", rank, status.MPI_TAG);
-      MPI_Irecv(day, 1, MPI_INT, _MASTER, _TAG_CLOCK+cell->actor.ID, MPI_COMM_WORLD,r );
+      MPI_Irecv(month, 1, MPI_INT, _MASTER, _TAG_CLOCK+cell->actor.ID, MPI_COMM_WORLD,r );
 
 
     
       return 1;
       //MPI_Irecv(&data_recv,2,MPI_INT, _MASTER, _TAG_CLOCK+cell->actor.ID,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
       /* Update the cells by sending them back their influx they need to store*/
-      //update_cells(cell, day);
+      //update_cells(cell, month);
       /*Update individual cell data*/
       /*implement return */
     }

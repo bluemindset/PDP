@@ -10,7 +10,7 @@ void print_pos(struct Squirrel *this);
 
 int getCellFromPosition(float x, float y);
 
-int update_cell_day(struct Cell *this);
+int update_cell_month(struct Cell *this);
 
 int if_squirrels_msg(MPI_Status status);
 
@@ -21,11 +21,11 @@ int if_clock_msg(MPI_Status status,int cellID);
 struct Cell *spawnCells(int startID, int endID, int rank);
 struct Squirrel *spawnSquirrels(int startID, int endID, int rank,int unhealthy);
 
-/*************************DAYS MANIPULATION***************************/
+/*************************monthS MANIPULATION***************************/
 /********************************************************************/
-void erase_day(struct Day *lastday);
-int length(struct Day *head);
-void chronicle(struct Day **lastday, int *healthy_s, int *unhealthy_s, float avg_influx, float avg_pop, int cells);
+void erase_month(struct month *lastmonth);
+int length(struct month *head);
+void chronicle(struct month **lastmonth, int *healthy_s, int *unhealthy_s, float avg_influx, float avg_pop, int cells);
 
 
 #endif

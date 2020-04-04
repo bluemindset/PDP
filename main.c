@@ -65,7 +65,6 @@ int main(int argc, char *argv[])
     masterlives(registry, size - 1);
     /*Send back to master the data */
   }
-  printf("Ending %d\n",rank);
   terminate_pool();
   MPI_Finalize();
 

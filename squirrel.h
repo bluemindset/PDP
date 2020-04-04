@@ -27,7 +27,7 @@ extern const struct SquirrelClass{
     struct Squirrel (*new)(int rank, int ID, int steps,int seed,float pos_x,float pos_y);
 } Squirrel;
 
-MPI_Request  squirrels_work(struct Squirrel * squirrel, int rank, struct Registry_cell *registry, int  data[2],int * alive);
+void squirrels_work(struct Squirrel * squirrel, int rank, struct Registry_cell *registry, int  data[2],int * alive,MPI_Request * r);
 int squirrel_life(struct Squirrel *squirrel, int influx, int pop, int *num_squirrels,int rank);
 
 /*Update the averages of the squirrels*/
@@ -39,6 +39,13 @@ static void update_avgs(int influx, int pop, struct Squirrel *this);
       3. Caclulate prop die 
       4. Caclulate prop born 
      */
+    
+void store_squirrel(int recvID, int *squirrels_IDs_healthy, int *squirrels_IDs_unhealthy,int health);
+void init_squirrel_stats (int *squirrels_IDs_healthy, int *squirrels_IDs_unhealthy);
+void print_stat_squirrels(int *squirrels_IDs_healthy, int *squirrels_IDs_unhealthy, int month, int rank);
+void selectionSort(int * a);
+int FindMax(int * a, int high);
+void swap(int * a, int p1, int p2);
 
 
 /**

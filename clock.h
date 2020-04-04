@@ -2,20 +2,20 @@
 #define _CLOCK_H
 
 
-typedef struct Day {
+typedef struct month {
     int * squirrels_healthy;
     int * squirrels_unhealthy;
     float avg_influx; 
     float avg_pop;
-    struct Day * nextday;
+    struct month * nextmonth;
     int ID;
-}Day;
+}month;
 
 struct Clock {
     struct Actor actor; 
     int ID;
     int rank;
-    Day * timeline;
+    month * timeline;
 };
 
 extern const struct ClockClass{
@@ -25,6 +25,7 @@ extern const struct ClockClass{
 
 
 void clock_work(Registry_cell *r, int workers_size, struct Clock *clock);
-void delay(unsigned int secs);
+void delaySquirrel(int delay);
+void delayClock(unsigned int secs);
 
 #endif

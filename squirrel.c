@@ -27,7 +27,7 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-MPI_Request squirrels_work(struct Squirrel *squirrel, int rank, struct Registry_cell *registry, int data_recv[2], int *alive)
+void squirrels_work(struct Squirrel *squirrel, int rank, struct Registry_cell *registry, int data_recv[2], int *alive, MPI_Request *rr)
 {
   float new_x, new_y;
   long seed = 1;
@@ -63,14 +63,15 @@ MPI_Request squirrels_work(struct Squirrel *squirrel, int rank, struct Registry_
     }
   }
   /*Create the package and send it*/
-  int data[2];
+  int data[3];
   data[0] = squirrel->health;
   data[1] = cellID;
+  data[2] = squirrel->actor.ID;
   int tag = cellID * _TAG_SQUIRRELS;
 
   MPI_Request r;
   int ready2;
-  MPI_Isend(&data, 2, MPI_INT, cell_rank, tag, MPI_COMM_WORLD, &r);
+  MPI_Isend(&data, 3, MPI_INT, cell_rank, tag, MPI_COMM_WORLD, &r);
   if (_DEBUG)
     printf("[Worker] Squirrel %d sending data to cell %d on rank %d with tag %d\n", squirrel->actor.ID, cellID, cell_rank, tag);
 
@@ -88,30 +89,149 @@ MPI_Request squirrels_work(struct Squirrel *squirrel, int rank, struct Registry_
     }
   }
 
-  MPI_Request rr;
-  MPI_Irecv(data_recv, 2, MPI_INT, cell_rank, tag, MPI_COMM_WORLD, &rr);
-  return rr;
+  MPI_Irecv(data_recv, 2, MPI_INT, cell_rank, tag, MPI_COMM_WORLD, rr);
 }
 
-int squirrel_life(struct Squirrel *squirrel, int influx, int pop, int *num_squirrels,int rank)
+void init_squirrel_stats(int *squirrels_IDs_healthy, int *squirrels_IDs_unhealthy)
 {
-  long seed = 1;
+
+  int i;
+  for (i = 0; i < _MAX_SQUIRRELS; i++)
+  {
+    squirrels_IDs_healthy[i] = -1;
+    squirrels_IDs_unhealthy[i] = -1;
+  }
+}
+
+void selectionsort(int *a)
+{
+  int i, max;
+  for (i = 0; i < _MAX_SQUIRRELS; i++)
+  {
+    max = FindMax(a, _MAX_SQUIRRELS - i - 1);
+    swap(a, max, _MAX_SQUIRRELS - i - 1);
+  }
+}
+
+int FindMax(int *a, int high)
+{
+  int i, index;
+  index = high;
+  for (i = 0; i < high; i++)
+  {
+    if (a[i] > a[index])
+      index = i;
+  }
+  return index;
+}
+
+void swap(int *a, int p1, int p2)
+{
+  int temp;
+  temp = a[p2];
+  a[p2] = a[p1];
+  a[p1] = temp;
+}
+
+void print_stat_squirrels(int *squirrels_IDs_healthy, int *squirrels_IDs_unhealthy, int month, int rank)
+{
+  int i, count = 0;
+  int healthy=0,unhealthy=0;
+  selectionsort(squirrels_IDs_healthy);
+  selectionsort(squirrels_IDs_unhealthy);
+
+  printf("~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+  for (i = 0; i < _MAX_SQUIRRELS; i++)
+  {
+    if (squirrels_IDs_healthy[i] != -1)
+    {
+      healthy++;
+      if (_DEBUG)
+      {
+        printf("[Worker] Squirrel with ID %d is alive on rank %d and month %d\n ", squirrels_IDs_healthy[i], month, rank);
+      }
+    }
+    if (squirrels_IDs_unhealthy[i] != -1)
+    {
+      unhealthy++;
+      if (_DEBUG)
+      {
+        printf("[Worker] Squirrel with ID %d is alive on rank %d and month %d\n ", squirrels_IDs_unhealthy[i], month, rank);
+      }
+    }
+  }
+
+  printf("[Worker %d] ~  Month %d ~ Healthy squirrels are:   %d\n ",rank, month ,healthy );
+  printf("[Worker %d] ~  Month %d ~ Intected squirrels are:  %d\n ",rank ,month,unhealthy);
+  printf("~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+}
+
+void store_squirrel(int recvID, int *squirrels_IDs_healthy, int *squirrels_IDs_unhealthy, int health)
+{
+
+  int i;
+  if (health == 1)
+  {
+    for (i = 0; i < _MAX_SQUIRRELS; i++)
+    {
+      if (recvID == squirrels_IDs_healthy[i])
+      {
+        return;
+      }
+    }
+    for (i = 0; i < _MAX_SQUIRRELS; i++)
+    {
+      if (squirrels_IDs_healthy[i] == (-1))
+      {
+        squirrels_IDs_healthy[i] = recvID;
+        return;
+      }
+    }
+  }
+  else
+  {
+    for (i = 0; i < _MAX_SQUIRRELS; i++)
+    {
+      if (recvID == squirrels_IDs_unhealthy[i])
+      {
+        return;
+      }
+    }
+    for (i = 0; i < _MAX_SQUIRRELS; i++)
+    {
+      if (squirrels_IDs_unhealthy[i] == (-1))
+      {
+        squirrels_IDs_unhealthy[i] = recvID;
+        return;
+      }
+    }
+  }
+}
+
+int squirrel_life(struct Squirrel *squirrel, int influx, int pop, int *num_squirrels, int rank)
+{
+  long seed;
   int newborn = 0;
+
   /*Update the averages of the its population and influx*/
   squirrel->update_avgs(influx, pop, squirrel);
-  if (1)
+  if (_DEBUG)
     printf("[Worker] Squirrel %d has avg influx: %f and pop %f \n", squirrel->actor.ID, squirrel->avg_influx, squirrel->avg_pop);
-
+  srand(time(NULL));
+  seed = rand() % __INT_MAX__;
   if (willCatchDisease(squirrel->avg_influx, &seed))
   {
     squirrel->health = 0;
   }
-
-  if(willGiveBirth((float)squirrel->avg_pop,&seed)){
-    (*num_squirrels)++;
+  srand(time(NULL));
+  seed = rand() % __INT_MAX__;
+  if (willGiveBirth((float)squirrel->avg_pop, &seed))
+  {
     newborn = 1;
   }
-  if (!squirrel->health)    
+  srand(time(NULL));
+  seed = rand() % __INT_MAX__;
+  if (!squirrel->health)
   {
     if (willDie(&seed))
       squirrel->health = -1;
@@ -122,69 +242,71 @@ int squirrel_life(struct Squirrel *squirrel, int influx, int pop, int *num_squir
 void squirrelStep(float x, float y, float *x_new, float *y_new, long *state)
 {
 
-    float diff = ran2(state);
-    *x_new = (x + diff) - (int)(x + diff);
+  float diff = ran2(state);
+  *x_new = (x + diff) - (int)(x + diff);
 
-    diff = ran2(state);
-    *y_new = (y + diff) - (int)(y + diff);
+  diff = ran2(state);
+  *y_new = (y + diff) - (int)(y + diff);
 }
 
 static void update_avgs(int influx, int pop, struct Squirrel *this)
 {
-    int len;
-    if (this->steps == 50){
-        this->steps = 0;
-        len = 50;
-    }
-    else {
-        len = this->steps;
-    }
-    this->influx[this->steps] = influx;
-    this->pop[this->steps] = pop;
-    this->steps++;
-    int i;
-    double avg_i = 0, avg_p = 0;    
+  int len;
+  if (this->steps == 50)
+  {
+    this->steps = 0;
+    len = 50;
+  }
+  else
+  {
+    len = this->steps;
+  }
+  this->influx[this->steps] = influx;
+  this->pop[this->steps] = pop;
+  this->steps++;
+  int i;
+  double avg_i = 0, avg_p = 0;
 
-    for (i = 0; i < len; i++)
-    {
-        //printf("Squirel %d Influx %d ,pop %d steps %d\n",this->actor.ID,this->influx[i],this->pop[i],  this->steps);
-        avg_i += this->influx[i];
-        avg_p += this->pop[i];
-    }
-    avg_i = avg_i / 50;
-    avg_p = avg_p / 50;
-    this->avg_influx = avg_i;
-    this->avg_pop = avg_p;
+  for (i = 0; i < len; i++)
+  {
+    //printf("Squirel %d Influx %d ,pop %d steps %d\n",this->actor.ID,this->influx[i],this->pop[i],  this->steps);
+    avg_i += this->influx[i];
+    avg_p += this->pop[i];
+  }
+  avg_i = avg_i / 50;
+  avg_p = avg_p / 50;
+  this->avg_influx = avg_i;
+  this->avg_pop = avg_p;
 }
 
 int willGiveBirth(float avg_pop, long *state)
 {
-    float probability = 100.0; // Decrease this to make more likely, increase less likely
-    float tmp = avg_pop / probability;
+  float probability = 100.0; // Decrease this to make more likely, increase less likely
+  float tmp = avg_pop / probability;
 
-    return (ran2(state) < (atan(tmp * tmp) / (4 * tmp)));
+  return (ran2(state) < (atan(tmp * tmp) / (4 * tmp)));
 }
 
 int willCatchDisease(float avg_inf_level, long *state)
 {
-    float probability = 1000.0; // Decrease this to make more likely, increase less likely
-    return (ran2(state) < (atan(((avg_inf_level < 40000 ? avg_inf_level : 40000)) / probability) / M_PI));
+  float probability = 1000.0; // Decrease this to make more likely, increase less likely
+  return (ran2(state) < (atan(((avg_inf_level < 40000 ? avg_inf_level : 40000)) / probability) / M_PI));
 }
 
 int willDie(long *state)
 {
-    return (ran2(state) < (0.166666666));
+  return (ran2(state) < (0.166666666));
 }
 
 static struct Squirrel new (int rank, int ID, int steps, int seed, float p_x, float p_y)
 {
-    struct Squirrel squirrel = {.steps = steps, .seed = seed, .pos_x = p_x, .pos_y = p_y,.update_avgs= &update_avgs};
-    squirrel.actor = Actor.new(rank, ID);
-    squirrel.health = 1;
-    squirrel.avg_influx = 0;
-    squirrel.avg_pop = 0;
-    squirrel.steps =0;
-    return squirrel;
+  struct Squirrel squirrel = {.steps = steps, .seed = seed, .pos_x = p_x, .pos_y = p_y, .update_avgs = &update_avgs};
+  squirrel.actor = Actor.new(rank, ID);
+  squirrel.health = 1;
+  squirrel.avg_influx = 0;
+  squirrel.avg_pop = 0;
+  squirrel.steps = 0;
+  return squirrel;
 }
 
 const struct SquirrelClass Squirrel = {.new = &new};

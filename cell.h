@@ -3,11 +3,11 @@
 
 
 
-struct Day_stat {
+struct month_stat {
     int squirrels_healthy;
     int squirrels_unhealthy;
-    struct Day_stat * nextstat;
-}Day_stat;
+    struct month_stat * nextstat;
+}month_stat;
 
 
 struct Cell {
@@ -21,7 +21,7 @@ struct Cell {
     int (*getCellIDFromPosition) (float, float, struct Cell *);
     int  squirrels_healthy[24];
     int  squirrels_unhealthy[24];
-    struct Day_stat * day_stats;
+    struct month_stat * month_stats;
     int c;
 };
 
@@ -31,7 +31,7 @@ extern const struct CellClass{
 } Cell;
 
 
-void update_cell(struct Cell *cell, int day, int rank,int * stats,int cellID,int num_cells);
+void update_cell(struct Cell *cell, int month, int rank,int * stats,int cellID,int num_cells);
 
 
 

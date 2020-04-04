@@ -150,8 +150,7 @@ void masterlives(Registry_cell *r, int workers_size)
     /* If the master receives any message from workers it 
     evaluates it */
     MPI_Status status;
-    int secs = 20;
-    unsigned int retTime = time(0) + secs / 10;
+    unsigned int retTime = time(0) + MONTH_IN_SEC;
     
     /* For one month, squirrels and cells can exchange messages*/
     while ( (time(0) < retTime) && masterStatus)
@@ -177,12 +176,11 @@ void masterlives(Registry_cell *r, int workers_size)
       if (status.MPI_TAG == CONTROL_TAG)
       {
         masterStatus = receiving_handle();
-        printf( "Master %d",masterStatus);
       }
     }
 
-    /* When the loop finishes , tick the clock by one day */
-    if ((clock.timeline->ID <= _MAX_DAYS_SIMULATION) && masterStatus)
+    /* When the loop finishes , tick the clock by one month */
+    if ((clock.timeline->ID <= _MAX_MONTHS_SIMULATION) && masterStatus)
       clock_work(r, workers_size, &clock);
   }
 }
