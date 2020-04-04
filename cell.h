@@ -16,10 +16,11 @@ struct Cell {
     int seed; 
     float pos_x;
     float pos_y;
-    float influx;
-    float pop;
+    int influx;
+    int pop;
     int (*getCellIDFromPosition) (float, float, struct Cell *);
-    int * squirrels_month;
+    int  squirrels_healthy[24];
+    int  squirrels_unhealthy[24];
     struct Day_stat * day_stats;
     int c;
 };
@@ -30,7 +31,7 @@ extern const struct CellClass{
 } Cell;
 
 
-void update_cells(struct Cell *cell, int day);
+void update_cell(struct Cell *cell, int day, int rank,int * stats,int cellID,int num_cells);
 
 
 

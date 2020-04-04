@@ -9,8 +9,8 @@ struct Squirrel {
     int health; 
     float pos_x;
     float pos_y;
-    double influx[50];
-    double pop[50];
+    int influx[50];
+    int pop[50];
     double avg_influx;
     double avg_pop;
     /*Declaring functions*/

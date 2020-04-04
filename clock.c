@@ -22,9 +22,7 @@
 
 void clock_work(Registry_cell *r, int workers_size, struct Clock *clock)
 {
-   /* Clock, one day passes */
-  delay(40);
-  
+   /* Clock, one day passes */  
   int num_cells = 16;
   int i = 0, j = 0, day = 0, y=0;
   int forever = 1;
@@ -55,7 +53,7 @@ void clock_work(Registry_cell *r, int workers_size, struct Clock *clock)
       for (k = 0; k < current_r->num_c; k++)
       {
         /*Send to every worker the cells*/
-     //   if(_DEBUG)
+        if(_DEBUG)
         printf("[Worker]Clock to Cell ID %d %d \n", current_r->rank, _TAG_CLOCK + current_r->actors_ID[k]);
         MPI_Isend(&clock->timeline->ID, 1, MPI_INT, current_r->rank, _TAG_CLOCK + current_r->actors_ID[k], MPI_COMM_WORLD, &rss[y]);
         /*Receive the from the cell*/
@@ -63,7 +61,7 @@ void clock_work(Registry_cell *r, int workers_size, struct Clock *clock)
         y++;
         i++;
       }
-   
+      
       num_workers++;
     }
     else

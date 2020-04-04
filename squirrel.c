@@ -39,19 +39,23 @@ void squirrelStep(float x, float y, float *x_new, float *y_new, long *state)
 
 static void update_avgs(int influx, int pop, struct Squirrel *this)
 {
-    
-    if (this->steps == 50)
+    int len;
+    if (this->steps == 50){
         this->steps = 0;
-
+        len = 50;
+    }
+    else {
+        len = this->steps;
+    }
     this->influx[this->steps] = influx;
     this->pop[this->steps] = pop;
     this->steps++;
-  //printf("Squirel Steps%d\n",this->steps);
     int i;
-    double avg_i = 0, avg_p = 0;
+    double avg_i = 0, avg_p = 0;    
 
-    for (i = 0; i < 50; i++)
+    for (i = 0; i < len; i++)
     {
+        //printf("Squirel %d Influx %d ,pop %d steps %d\n",this->actor.ID,this->influx[i],this->pop[i],  this->steps);
         avg_i += this->influx[i];
         avg_p += this->pop[i];
     }

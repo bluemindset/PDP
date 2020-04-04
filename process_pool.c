@@ -96,8 +96,8 @@ void terminate_pool()
     {
         /* If there is not UEs then terminate the state*/
    
-        if (UEs_state != NULL)
-            free(UEs_state);
+        //if (UEs_state != NULL)
+       //     free(UEs_state);
         int i;
         for (i = 0; i < UEs - 1; i++)
         {
@@ -107,7 +107,7 @@ void terminate_pool()
         /* Barrier the termination and free the datatype*/
     }
     MPI_Barrier(MPI_COMM_WORLD);
-    MPI_Type_free(&Message_Control_DataType);
+ //   MPI_Type_free(&Message_Control_DataType);
 }
 
 /*Wait forever and handle the receives  (Master Poll)*/
@@ -263,6 +263,7 @@ int should_terminate_worker(int ask)
             /*If there is a request that carries a stop message then stop*/
             if (flag && incoming_msg.com == _STOP)
             {
+                printf("HERE %d \n",rank);
                 return 0;
             }
         }
