@@ -23,7 +23,7 @@
 void clock_work(Registry_cell *r, int workers_size, struct Clock *clock)
 {
   /* Clock, one month passes */
-  int num_cells = 16;
+
   int i = 0, j = 0, month = 0, y = 0;
   int forever = 1;
   struct Registry_cell *current_r = r;
@@ -31,18 +31,17 @@ void clock_work(Registry_cell *r, int workers_size, struct Clock *clock)
   int *cells;
 
   /*******Send to all cell workers that month has passed******/
-  MPI_Request rsr[num_cells];
-  MPI_Request rss[num_cells];
+  MPI_Request rsr[_NUM_CELLS];
+  MPI_Request rss[_NUM_CELLS];
 
-  int data_r[num_cells][3];
+  int data_r[_NUM_CELLS][3];
   float avg_influx = 0;
   float avg_pop = 0;
   int cell_id;
-
   /*Squirrels healthy and unhealthy that passed from each cell*/
-  int *squirrels_healthy = (int *)calloc(num_cells, sizeof(int));
-  int *squirrels_unhealthy = (int *)calloc(num_cells, sizeof(int));
-  int *workers = (int *)calloc(num_cells, sizeof(int));
+  int *squirrels_healthy = (int *)calloc(_NUM_CELLS, sizeof(int));
+  int *squirrels_unhealthy = (int *)calloc(_NUM_CELLS, sizeof(int));
+  int *workers = (int *)calloc(_NUM_CELLS, sizeof(int));
   while (current_r != NULL)
   {
     /*If the rank contains cells*/
@@ -70,8 +69,8 @@ void clock_work(Registry_cell *r, int workers_size, struct Clock *clock)
     current_r = current_r->next;
   }
 
-  MPI_Waitall(num_cells, rss, MPI_STATUSES_IGNORE);
-  MPI_Waitall(num_cells, rsr, MPI_STATUSES_IGNORE);
+  MPI_Waitall(_NUM_CELLS, rss, MPI_STATUSES_IGNORE);
+  MPI_Waitall(_NUM_CELLS, rsr, MPI_STATUSES_IGNORE);
 
   /*Receive from each cell
     a) Cell ID
@@ -80,7 +79,7 @@ void clock_work(Registry_cell *r, int workers_size, struct Clock *clock)
     d) Unhealthy squirrells
     e) Healthy squirrels
 */
-  for (i = 0; i < num_cells; i++)
+  for (i = 0; i < _NUM_CELLS; i++)
   {
     squirrels_healthy[cell_id] = data_r[i][0];
     squirrels_unhealthy[cell_id] = data_r[i][1];
@@ -109,9 +108,7 @@ void clock_work(Registry_cell *r, int workers_size, struct Clock *clock)
   int h_c = 0;
   int u_c = 0;
 
-  // for (j = 0; j < _MAX_SQUIRRELS; j++)
-  //   {printf("%d \n", h_stats[0][j]);printf("%d \n", u_stats[0][j]);}
-
+  
   for (i = 0; i < num_workers; i++)
   {
     for (j = 0; j < _MAX_SQUIRRELS; j++)
@@ -148,7 +145,7 @@ void clock_work(Registry_cell *r, int workers_size, struct Clock *clock)
   /* Update the timeline of the simulation, by inserting the number of healthy and unhealthy squirrels, influx and
   population from each cell*/
 
-  chronicle(&clock->timeline, squirrels_healthy, squirrels_unhealthy, avg_influx, avg_pop, num_cells);
+  chronicle(&clock->timeline, squirrels_healthy, squirrels_unhealthy, avg_influx, avg_pop);
   printf("~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~\n");
   printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~%d~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n", clock->timeline->ID);
   printf("~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~\n");

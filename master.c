@@ -26,7 +26,7 @@
 #define NUM_ACTORS 2
 /********************************************************************/
 /********************************************************************/
-void master_send_instructions(int num_cells, int num_squirrels, int size, struct Registry_cell **r, int *workers)
+void master_send_instructions( int size, struct Registry_cell **r, int *workers)
 {
   /*Master sends the number of squirrels*/
   /*
@@ -46,7 +46,7 @@ void master_send_instructions(int num_cells, int num_squirrels, int size, struct
 
   /***************************************** DIVIDING THE WORK  ****************************************/
 
-  /*A process will handle some actors but only one of a kind*/
+  /*A process will handle many actors but only one of a kind*/
   if (size % 2 == 0)
   {
     workers_cells = (int *)malloc(sizeof(int) * (size / 2));
@@ -82,43 +82,44 @@ void master_send_instructions(int num_cells, int num_squirrels, int size, struct
   /***************************************** WORKERS INITIALIZATION ****************************************/
   int data[3];
   int squirrels_startID = 0, cells_startID = 0;
-  int squirrels_endID = (num_squirrels / ws);
-  int cells_endID = (num_cells / wc);
+  int squirrels_endID = (_NUM_INIT_SQUIRRELS / ws);
+  int cells_endID = (_NUM_CELLS / wc);
   int correctsplit = 1;
 
-  if ((size % 2) == 0)
-    correctsplit = 0;
 
   /*Send the squirrels to the workers*/
   for (i = 0; i < ws; i++)
   {
-    if (i == size - 1 && correctsplit)
+    if (i == ws - 1 && (ws % 2) && ws >1) /* Split it correct the final ID should increment to one*/
     {
       squirrels_endID++;
     }
     data[0] = squirrels_startID;
     data[1] = squirrels_endID;
-    data[2] = 0;
+    data[2] = 0;  /*This indicates what actor type it the worker should handle (Squirrels)*/
+
     /*Assign the IDs of the actors to the registry and send them to the workers*/
     assign_registry(r, workers_squirrels[i], squirrels_startID, squirrels_endID,
                     0, 0, 0);
+
     MPI_Send(&data, 3, MPI_INT, workers_squirrels[i], _TAG_INITIAL, MPI_COMM_WORLD);
     if (_DEBUG)
       printf("Sending to rank : %d, the data %d %d %d\n", workers_squirrels[i], data[0], data[1], data[2]);
-    squirrels_startID += (num_squirrels / ws);
-    squirrels_endID += (num_squirrels / ws);
+    squirrels_startID += (_NUM_INIT_SQUIRRELS / ws);
+    squirrels_endID += (_NUM_INIT_SQUIRRELS / ws);
   }
 
   /*Send the cells to the workers*/
   for (i = 0; i < wc; i++)
   {
-    if (i == size - 1 && correctsplit)
+    if (i == wc-1 && (wc % 2)&& wc>1)
     {
       cells_endID++;
     }
     data[0] = cells_startID;
     data[1] = cells_endID;
-    data[2] = 1;
+    data[2] = 1; /* This indicates what actor type it the worker should handle (Cells)*/
+
     /*Assign the IDs of the actors to the registry and send them to the workers*/
     assign_registry(r, workers_cells[i], 0, 0,
                     cells_startID, cells_endID, 1);
@@ -127,17 +128,16 @@ void master_send_instructions(int num_cells, int num_squirrels, int size, struct
     if (_DEBUG)
       printf("Sending to rank : %d, the data %d %d %d\n ", workers_cells[i], data[0], data[1], data[2]);
 
-    cells_startID += num_cells / wc;
-    cells_endID += num_cells / wc;
+    cells_startID += _NUM_CELLS / wc;
+    cells_endID += _NUM_CELLS / wc;
   }
 
   int success_assign = 0, success_all_assign = 0;
   MPI_Reduce(&success_assign, &success_all_assign, 1, MPI_FLOAT, MPI_SUM, _MASTER, MPI_COMM_WORLD);
-  if (_DEBUG)
-  {
-    printf("Success spaniwng of actors %d %d \n", success_all_assign, size);
-    print_register(*r);
-  }
+  
+  printf("[Master]Success spaniwng of actors %d %d \n", success_all_assign, size);
+  print_register(*r);
+
 }
 
 void masterlives(Registry_cell *r, int workers_size)

@@ -68,23 +68,23 @@ void print_register(struct Registry_cell *head)
   struct Registry_cell *current = head;
   int count = 0;
   int i = 0;
+   printf("~~~~~~~~~~~~~~~~~REGISTER~~~~~~~~~~~~~~~~~~~~~\n");
   while (current != NULL)
   {
       while (current->num_c > i)
       {
-        printf("R%d - Cell ID%d\n", current->rank, current->actors_ID[i]);
+        printf("Rank%d - Cell ID%d\n", current->rank, current->actors_ID[i]);
         i++;
       }
     i =0;
       while (current->num_s > i)
       {
-        printf("R%d - Squirrel ID%d\n", current->rank, current->actors_ID[i]);
+        printf("Rank%d - Squirrel ID%d\n", current->rank, current->actors_ID[i]);
         i++;
       }
-
-    
     current = current->next;
   }
+  printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 }
 
 /*Get the Cell Rank

@@ -31,7 +31,7 @@ extern const struct CellClass{
 } Cell;
 
 
-void update_cell(struct Cell *cell, int month, int rank,int * stats,int cellID,int num_cells);
+void update_cell(struct Cell *cell, int month, int rank,int * stats,int cellID);
 
 
 

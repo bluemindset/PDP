@@ -31,9 +31,6 @@ int main(int argc, char *argv[])
   Registry_cell *registry = NULL;
 
   /****Initialize MPI****/
-  int num_cells = 16;
-  int num_squirrels = 4;
-
   int rank;
   int size;
   time_t t;
@@ -58,7 +55,7 @@ int main(int argc, char *argv[])
     /*Worker determines the jobs to give not other workers*/
     startworkers(size - 1, workers);
 
-    master_send_instructions(16, 34, size - 1, &registry, workers);
+    master_send_instructions(size - 1, &registry, workers);
 
     /*While the master lives*/
     masterlives(registry, size - 1);

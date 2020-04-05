@@ -25,7 +25,7 @@ struct Squirrel *spawnSquirrels(int startID, int endID, int rank,int unhealthy);
 /********************************************************************/
 void erase_month(struct month *lastmonth);
 int length(struct month *head);
-void chronicle(struct month **lastmonth, int *healthy_s, int *unhealthy_s, float avg_influx, float avg_pop, int cells);
+void chronicle(struct month **lastmonth, int *healthy_s, int *unhealthy_s, float avg_influx, float avg_pop);
 
 
 #endif

@@ -43,8 +43,8 @@ static void update_avgs(int influx, int pop, struct Squirrel *this);
 void store_squirrel(int recvID, int *squirrels_IDs_healthy, int *squirrels_IDs_unhealthy,int health);
 void init_squirrel_stats (int *squirrels_IDs_healthy, int *squirrels_IDs_unhealthy);
 void print_stat_squirrels(int *squirrels_IDs_healthy, int *squirrels_IDs_unhealthy, int month, int rank);
-void selectionSort(int * a);
-int FindMax(int * a, int high);
+void selection_sort(int * a);
+int  find_max(int * a, int high);
 void swap(int * a, int p1, int p2);
 
 

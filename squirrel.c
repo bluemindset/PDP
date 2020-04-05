@@ -103,52 +103,25 @@ void init_squirrel_stats(int *squirrels_IDs_healthy, int *squirrels_IDs_unhealth
   }
 }
 
-void selectionsort(int *a)
-{
-  int i, max;
-  for (i = 0; i < _MAX_SQUIRRELS; i++)
-  {
-    max = FindMax(a, _MAX_SQUIRRELS - i - 1);
-    swap(a, max, _MAX_SQUIRRELS - i - 1);
-  }
-}
-
-int FindMax(int *a, int high)
-{
-  int i, index;
-  index = high;
-  for (i = 0; i < high; i++)
-  {
-    if (a[i] > a[index])
-      index = i;
-  }
-  return index;
-}
-
-void swap(int *a, int p1, int p2)
-{
-  int temp;
-  temp = a[p2];
-  a[p2] = a[p1];
-  a[p1] = temp;
-}
-
 void print_stat_squirrels(int *squirrels_IDs_healthy, int *squirrels_IDs_unhealthy, int month, int rank)
 {
-  int i,j;
-  int healthy=0,unhealthy=0;
-  selectionsort(squirrels_IDs_healthy);
-  selectionsort(squirrels_IDs_unhealthy);
-
+  int i, j;
+  int healthy = 0, unhealthy = 0;
+  if (_DEBUG)
+  {
+    selection_sort(squirrels_IDs_healthy);
+    selection_sort(squirrels_IDs_unhealthy);
+  }
   printf("~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
   for (i = 0; i < _MAX_SQUIRRELS; i++)
   {
     for (j = 0; j < _MAX_SQUIRRELS; j++)
+    {
+      if (squirrels_IDs_healthy[i] == squirrels_IDs_unhealthy[j])
       {
-        if(squirrels_IDs_healthy[i]==squirrels_IDs_unhealthy[j]){
-            squirrels_IDs_healthy[i] =-1;
-        }
+        squirrels_IDs_healthy[i] = -1;
       }
+    }
   }
   for (i = 0; i < _MAX_SQUIRRELS; i++)
   {
@@ -170,8 +143,8 @@ void print_stat_squirrels(int *squirrels_IDs_healthy, int *squirrels_IDs_unhealt
     }
   }
 
-  printf("[Master %d] ~  Month %d ~ Healthy squirrels are:   %d\n ",rank, month ,healthy );
-  printf("[Master %d] ~  Month %d ~ Intected squirrels are:  %d\n ",rank ,month,unhealthy);
+  printf("[Master %d] ~  Month %d ~ Healthy squirrels are:   %d\n ", rank, month, healthy);
+  printf("[Master %d] ~  Month %d ~ Intected squirrels are:  %d\n ", rank, month, unhealthy);
   printf("~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 }
 
@@ -319,3 +292,33 @@ static struct Squirrel new (int rank, int ID, int steps, int seed, float p_x, fl
 }
 
 const struct SquirrelClass Squirrel = {.new = &new};
+
+void selection_sort(int *a)
+{
+  int i, max;
+  for (i = 0; i < _MAX_SQUIRRELS; i++)
+  {
+    max = find_max(a, _MAX_SQUIRRELS - i - 1);
+    swap(a, max, _MAX_SQUIRRELS - i - 1);
+  }
+}
+
+int find_max(int *a, int high)
+{
+  int i, index;
+  index = high;
+  for (i = 0; i < high; i++)
+  {
+    if (a[i] > a[index])
+      index = i;
+  }
+  return index;
+}
+
+void swap(int *a, int p1, int p2)
+{
+  int temp;
+  temp = a[p2];
+  a[p2] = a[p1];
+  a[p1] = temp;
+}

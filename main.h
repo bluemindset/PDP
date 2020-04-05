@@ -8,7 +8,7 @@
 /********************************************************************/
 #define _TAG_SQUIRRELS 6
 #define _TAG_CELLS 2
-#define _TAG_CLOCK 10000
+#define _TAG_CLOCK 100000
 #define _TAG_INITIAL 4
 #define _TAG_REGISTRY_CELL 5
 #define _MAX_SQUIRRELS 200
@@ -18,9 +18,12 @@
 /********************************************************************/
 #define _MONTHS_INFLUX 2
 #define _MONTHS_POP 3
-#define  _MAX_MONTHS_SIMULATION 4
+#define  _MAX_MONTHS_SIMULATION 2
 #define UNHEALTHY_SQUIRRELS 4
 #define MONTH_IN_SEC 2
+#define _NUM_CELLS 16
+#define _NUM_INIT_SQUIRRELS 34
+
 /**
  * Initialises the random number generator, call it once at the start of the program on each process. The input
  * value should be negative, non-zero and different on each process, I suggest something like -1-rank where

@@ -5,7 +5,7 @@
 
 
 
-void master_send_instructions(int num_cells, int num_squirrels, int size,struct Registry_cell **registry,int * workers );
+void master_send_instructions( int size, struct Registry_cell **r, int *workers);
 
 void masterlives(Registry_cell *r, int workers_size);
 
