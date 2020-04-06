@@ -1,0 +1,294 @@
+[Master] Starting process 1
+[Master] Starting process 2
+[Master] Starting process 3
+[Worker] Worker 1 is ready  
+[Worker] Heart-Beat with [Master] communication established!  
+[Worker] Worker 2 is ready  
+[Worker] Heart-Beat with [Master] communication established!  
+[Worker] Worker 3 is ready  
+[Worker] Heart-Beat with [Master] communication established!  
+[Master]Success spaniwng of actors 3 3 
+~~~~~~~~~~~~~~~~~REGISTER~~~~~~~~~~~~~~~~~~~~~
+Rank2 - Cell ID8
+Rank2 - Cell ID9
+Rank2 - Cell ID10
+Rank2 - Cell ID11
+Rank2 - Cell ID12
+Rank2 - Cell ID13
+Rank2 - Cell ID14
+Rank2 - Cell ID15
+Rank1 - Cell ID0
+Rank1 - Cell ID1
+Rank1 - Cell ID2
+Rank1 - Cell ID3
+Rank1 - Cell ID4
+Rank1 - Cell ID5
+Rank1 - Cell ID6
+Rank1 - Cell ID7
+Rank3 - Squirrel ID0
+Rank3 - Squirrel ID1
+Rank3 - Squirrel ID2
+Rank3 - Squirrel ID3
+Rank3 - Squirrel ID4
+Rank3 - Squirrel ID5
+Rank3 - Squirrel ID6
+Rank3 - Squirrel ID7
+Rank3 - Squirrel ID8
+Rank3 - Squirrel ID9
+Rank3 - Squirrel ID10
+Rank3 - Squirrel ID11
+Rank3 - Squirrel ID12
+Rank3 - Squirrel ID13
+Rank3 - Squirrel ID14
+Rank3 - Squirrel ID15
+Rank3 - Squirrel ID16
+Rank3 - Squirrel ID17
+Rank3 - Squirrel ID18
+Rank3 - Squirrel ID19
+Rank3 - Squirrel ID20
+Rank3 - Squirrel ID21
+Rank3 - Squirrel ID22
+Rank3 - Squirrel ID23
+Rank3 - Squirrel ID24
+Rank3 - Squirrel ID25
+Rank3 - Squirrel ID26
+Rank3 - Squirrel ID27
+Rank3 - Squirrel ID28
+Rank3 - Squirrel ID29
+Rank3 - Squirrel ID30
+Rank3 - Squirrel ID31
+Rank3 - Squirrel ID32
+Rank3 - Squirrel ID33
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Worker that handles cells received  54 squirrels messages
+Worker that handles cells received  53 squirrels messages
+~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Master 0] ~  Month 0 ~ Healthy squirrels are:   30
+ [Master 0] ~  Month 0 ~ Intected squirrels are:  4
+ ~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~1~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+Worker that handles cells received  93 squirrels messages
+Worker that handles cells received  109 squirrels messages
+~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Master 0] ~  Month 1 ~ Healthy squirrels are:   30
+ [Master 0] ~  Month 1 ~ Intected squirrels are:  4
+ ~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~2~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+Worker that handles cells received  112 squirrels messages
+Worker that handles cells received  122 squirrels messages
+~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Master 0] ~  Month 2 ~ Healthy squirrels are:   31
+ [Master 0] ~  Month 2 ~ Intected squirrels are:  4
+ ~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~3~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+Worker that handles cells received  103 squirrels messages
+Worker that handles cells received  107 squirrels messages
+~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Master 0] ~  Month 3 ~ Healthy squirrels are:   33
+ [Master 0] ~  Month 3 ~ Intected squirrels are:  5
+ ~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~4~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+Worker that handles cells received  96 squirrels messages
+Worker that handles cells received  97 squirrels messages
+~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Master 0] ~  Month 4 ~ Healthy squirrels are:   37
+ [Master 0] ~  Month 4 ~ Intected squirrels are:  5
+ ~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~5~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+Worker that handles cells received  97 squirrels messages
+Worker that handles cells received  104 squirrels messages
+~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Master 0] ~  Month 5 ~ Healthy squirrels are:   44
+ [Master 0] ~  Month 5 ~ Intected squirrels are:  5
+ ~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~6~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+Worker that handles cells received  107 squirrels messages
+Worker that handles cells received  106 squirrels messages
+~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Master 0] ~  Month 6 ~ Healthy squirrels are:   46
+ [Master 0] ~  Month 6 ~ Intected squirrels are:  5
+ ~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~7~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+Worker that handles cells received  108 squirrels messages
+Worker that handles cells received  109 squirrels messages
+~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Master 0] ~  Month 7 ~ Healthy squirrels are:   54
+ [Master 0] ~  Month 7 ~ Intected squirrels are:  5
+ ~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~8~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+Worker that handles cells received  99 squirrels messages
+Worker that handles cells received  109 squirrels messages
+~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Master 0] ~  Month 8 ~ Healthy squirrels are:   57
+ [Master 0] ~  Month 8 ~ Intected squirrels are:  5
+ ~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~9~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+Worker that handles cells received  96 squirrels messages
+Worker that handles cells received  107 squirrels messages
+~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Master 0] ~  Month 9 ~ Healthy squirrels are:   66
+ [Master 0] ~  Month 9 ~ Intected squirrels are:  5
+ ~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~10~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+Worker that handles cells received  121 squirrels messages
+Worker that handles cells received  123 squirrels messages
+~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Master 0] ~  Month 10 ~ Healthy squirrels are:   74
+ [Master 0] ~  Month 10 ~ Intected squirrels are:  5
+ ~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~11~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+Worker that handles cells received  101 squirrels messages
+Worker that handles cells received  96 squirrels messages
+~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Master 0] ~  Month 11 ~ Healthy squirrels are:   80
+ [Master 0] ~  Month 11 ~ Intected squirrels are:  5
+ ~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~12~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+Worker that handles cells received  104 squirrels messages
+Worker that handles cells received  122 squirrels messages
+~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Master 0] ~  Month 12 ~ Healthy squirrels are:   87
+ [Master 0] ~  Month 12 ~ Intected squirrels are:  4
+ ~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~13~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+Worker that handles cells received  103 squirrels messages
+Worker that handles cells received  105 squirrels messages
+~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Master 0] ~  Month 13 ~ Healthy squirrels are:   97
+ [Master 0] ~  Month 13 ~ Intected squirrels are:  3
+ ~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~14~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+Worker that handles cells received  104 squirrels messages
+Worker that handles cells received  111 squirrels messages
+~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Master 0] ~  Month 14 ~ Healthy squirrels are:   104
+ [Master 0] ~  Month 14 ~ Intected squirrels are:  3
+ ~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~15~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+Worker that handles cells received  98 squirrels messages
+Worker that handles cells received  115 squirrels messages
+~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Master 0] ~  Month 15 ~ Healthy squirrels are:   109
+ [Master 0] ~  Month 15 ~ Intected squirrels are:  3
+ ~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~16~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+Worker that handles cells received  110 squirrels messages
+Worker that handles cells received  99 squirrels messages
+~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Master 0] ~  Month 16 ~ Healthy squirrels are:   115
+ [Master 0] ~  Month 16 ~ Intected squirrels are:  3
+ ~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~17~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+Worker that handles cells received  108 squirrels messages
+Worker that handles cells received  103 squirrels messages
+~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Master 0] ~  Month 17 ~ Healthy squirrels are:   121
+ [Master 0] ~  Month 17 ~ Intected squirrels are:  2
+ ~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~18~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+Worker that handles cells received  110 squirrels messages
+Worker that handles cells received  108 squirrels messages
+~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Master 0] ~  Month 18 ~ Healthy squirrels are:   129
+ [Master 0] ~  Month 18 ~ Intected squirrels are:  2
+ ~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~19~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+Worker that handles cells received  109 squirrels messages
+Worker that handles cells received  104 squirrels messages
+~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Master 0] ~  Month 19 ~ Healthy squirrels are:   136
+ [Master 0] ~  Month 19 ~ Intected squirrels are:  2
+ ~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~20~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+Worker that handles cells received  96 squirrels messages
+Worker that handles cells received  99 squirrels messages
+~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Master 0] ~  Month 20 ~ Healthy squirrels are:   142
+ [Master 0] ~  Month 20 ~ Intected squirrels are:  2
+ ~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~21~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+Worker that handles cells received  106 squirrels messages
+Worker that handles cells received  101 squirrels messages
+~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Master 0] ~  Month 21 ~ Healthy squirrels are:   150
+ [Master 0] ~  Month 21 ~ Intected squirrels are:  2
+ ~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~22~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+Worker that handles cells received  103 squirrels messages
+Worker that handles cells received  95 squirrels messages
+~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Master 0] ~  Month 22 ~ Healthy squirrels are:   158
+ [Master 0] ~  Month 22 ~ Intected squirrels are:  2
+ ~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~23~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+Worker that handles cells received  101 squirrels messages
+Worker that handles cells received  103 squirrels messages
+~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Master 0] ~  Month 23 ~ Healthy squirrels are:   164
+ [Master 0] ~  Month 23 ~ Intected squirrels are:  1
+ ~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~24~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+Worker that handles cells received  109 squirrels messages
+Worker that handles cells received  105 squirrels messages
+~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Master 0] ~  Month 24 ~ Healthy squirrels are:   174
+ [Master 0] ~  Month 24 ~ Intected squirrels are:  1
+ ~~~~~~~~~~~~~~~~~~~~~~~~~STATS~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~25~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~
+[Master] Stopping workers[1]
+[Master] Stopping workers[2]
+[Master] Stopping workers[3]
+[Worker 2] Master commanded me to stop 
+[Worker 1] Master commanded me to stop 
+[Worker 3] Master commanded me to stop 
+[Worker 3]Born squirrels: 151  ~~~ Dead Squirrels 5

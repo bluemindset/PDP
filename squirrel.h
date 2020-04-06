@@ -13,12 +13,7 @@ struct Squirrel {
     int pop[50];
     double avg_influx;
     double avg_pop;
-    /*Declaring functions*/
-    // void (*squirrelStep)(float x, float y, float *x_new, float *y_new, long *state);
-
-    // int (*willGiveBirth)
-    // int (*willCatchDisease)( long *,struct Squirrel*);
-    // int (*willDie)(long *,struct Squirrel*);
+    int last_steps;
     void (*update_avgs)(int influx, int pop, struct Squirrel *this);
 
 };
@@ -28,7 +23,7 @@ extern const struct SquirrelClass{
 } Squirrel;
 
 void squirrels_work(struct Squirrel * squirrel, int rank, struct Registry_cell *registry, int  data[2],int * alive,MPI_Request * r);
-int squirrel_life(struct Squirrel *squirrel, int influx, int pop, int *num_squirrels,int rank);
+int squirrel_life(struct Squirrel *squirrel, int influx, int pop, int *num_squirrels,int rank,int *dead);
 
 /*Update the averages of the squirrels*/
 static void update_avgs(int influx, int pop, struct Squirrel *this);

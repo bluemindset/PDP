@@ -34,7 +34,7 @@ enum _Command{
     _START = 2,
     _SLEEP = 3, 
     _COMPLETE = 4,
-    _IDLE = 5,
+    _RUN = 5,
 };
 
 typedef struct Message_Command{

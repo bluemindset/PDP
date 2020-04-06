@@ -11,18 +11,19 @@
 #define _TAG_CLOCK 100000
 #define _TAG_INITIAL 4
 #define _TAG_REGISTRY_CELL 5
-#define _MAX_SQUIRRELS 200
+#define _MAX_SQUIRRELS 199
 #define _TAG_STATS_UNHEALTHY 1
 #define _TAG_STATS_HEALTHY 0
 /**************************MONTHS**************************************/
 /********************************************************************/
-#define _MONTHS_INFLUX 2
-#define _MONTHS_POP 3
-#define  _MAX_MONTHS_SIMULATION 2
+#define _MONTHS_INFLUX 3
+#define _MONTHS_POP 4
+#define  _MAX_MONTHS_SIMULATION 24
 #define UNHEALTHY_SQUIRRELS 4
 #define MONTH_IN_SEC 2
 #define _NUM_CELLS 16
 #define _NUM_INIT_SQUIRRELS 34
+#define _STEPS 50
 
 /**
  * Initialises the random number generator, call it once at the start of the program on each process. The input

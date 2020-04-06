@@ -14,15 +14,7 @@ static int getID(struct  Actor *this)
       return (this->ID);
 }
 
-// static void send_msg_int (int x,int _rank, int _tag, MPI_Datatype mpi_type, MPI_Comm comm,struct Actor* this)
-// {
-//   printf("%s\t%d\n", __func__, x);
-// }
 
-// static void send_msg_char (char x, int _rank, int _tag, MPI_Datatype mpi_type, MPI_Comm comm,struct Actor* this)
-// {
-//   printf("%s\t%c\n", __func__, x);
-// }
 /*Create the new Actor*/
 static struct Actor new(int rank,int ID) {
 	return (struct Actor){.rank=rank , .ID=ID, .getID = &getID, .getRank = &getRank  };

@@ -57,9 +57,9 @@ void update_cell(struct Cell *cell, int month, int rank, int *stats, int cellID)
     unhealthy_s_1 = stats[(0 * _NUM_CELLS  * _MAX_MONTHS_SIMULATION) + (cellID * _MAX_MONTHS_SIMULATION) + month];
     healthy_s_1   = stats[(1 * _NUM_CELLS *  _MAX_MONTHS_SIMULATION) + (cellID * _MAX_MONTHS_SIMULATION) + month];
     /*Influx is calculated by this month that passed*/
-    cell->influx = unhealthy_s_1 + unhealthy_s_2;
+    cell->influx = unhealthy_s_1 ;
     /*Population is calculated by this month that passed*/
-    cell->pop = healthy_s_1 + healthy_s_2;
+    cell->pop = healthy_s_1 + cell->influx;
   }
   else if (month == 1)
   {
@@ -73,7 +73,7 @@ void update_cell(struct Cell *cell, int month, int rank, int *stats, int cellID)
     /* VIRUS can only live without a host for two months in the environment*/
     cell->influx = unhealthy_s_1 + unhealthy_s_2;
     /*Population is calculated by the last two months*/
-    cell->pop = healthy_s_1 + healthy_s_2;
+    cell->pop = healthy_s_1 + healthy_s_2 + cell->influx;
   }
   else if (month >= 2)
   {
@@ -88,7 +88,7 @@ void update_cell(struct Cell *cell, int month, int rank, int *stats, int cellID)
     /* VIRUS can only live without a host for two months in the environment if no unhealthy squirrel step in*/
     cell->influx = unhealthy_s_1 + unhealthy_s_2;
     /*Population is calculated by the last three months*/
-    cell->pop = healthy_s_1 + healthy_s_2 + healthy_s_3;
+    cell->pop = healthy_s_1 + healthy_s_2 + healthy_s_3 + cell->influx;
   }
 
   if (_DEBUG)

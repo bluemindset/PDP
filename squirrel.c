@@ -190,33 +190,48 @@ void store_squirrel(int recvID, int *squirrels_IDs_healthy, int *squirrels_IDs_u
   }
 }
 
-int squirrel_life(struct Squirrel *squirrel, int influx, int pop, int *num_squirrels, int rank)
+int squirrel_life(struct Squirrel *squirrel, int influx, int pop, int *num_squirrels, int rank, int *dead)
 {
   long seed;
   int newborn = 0;
+  if (squirrel->health != -1)
+  {
+    /*Update the averages of the its population and influx*/
+    squirrel->update_avgs(influx, pop, squirrel);
+    if (_DEBUG)
+      printf("[Worker] Squirrel %d has avg influx: %f and pop %f \n", squirrel->actor.ID, squirrel->avg_influx, squirrel->avg_pop);
+    srand(time(NULL));
+    seed = rand() % __INT_MAX__;
+    if (willCatchDisease(squirrel->avg_influx, &seed) && squirrel->health != 0)
+    {
+      squirrel->health = 0;
+    }
 
-  /*Update the averages of the its population and influx*/
-  squirrel->update_avgs(influx, pop, squirrel);
-  if (_DEBUG)
-    printf("[Worker] Squirrel %d has avg influx: %f and pop %f \n", squirrel->actor.ID, squirrel->avg_influx, squirrel->avg_pop);
-  srand(time(NULL));
-  seed = rand() % __INT_MAX__;
-  if (willCatchDisease(squirrel->avg_influx, &seed))
-  {
-    squirrel->health = 0;
-  }
-  srand(time(NULL));
-  seed = rand() % __INT_MAX__;
-  if (willGiveBirth((float)squirrel->avg_pop, &seed))
-  {
-    newborn = 1;
-  }
-  srand(time(NULL));
-  seed = rand() % __INT_MAX__;
-  if (!squirrel->health)
-  {
-    if (willDie(&seed))
-      squirrel->health = -1;
+    if (squirrel->health == 0)
+    {
+      squirrel->last_steps--;
+    }
+
+    srand(time(NULL));
+    seed = rand() % __INT_MAX__;
+    if (willGiveBirth(squirrel->avg_pop, &seed))
+    {
+      newborn = 1;
+    }
+
+    srand(time(NULL));
+    seed = rand() % __INT_MAX__;
+    if (!squirrel->health)
+    {
+      if (squirrel->last_steps <= 0)
+      {
+        if (willDie(&seed))
+        {
+          squirrel->health = -1;
+          (*dead)++;
+        }
+      }
+    }
   }
   return newborn;
 }
@@ -234,10 +249,10 @@ void squirrelStep(float x, float y, float *x_new, float *y_new, long *state)
 static void update_avgs(int influx, int pop, struct Squirrel *this)
 {
   int len;
-  if (this->steps == 50)
+  if (this->steps % _STEPS == 0)
   {
     this->steps = 0;
-    len = 50;
+    len = _STEPS;
   }
   else
   {
@@ -255,8 +270,8 @@ static void update_avgs(int influx, int pop, struct Squirrel *this)
     avg_i += this->influx[i];
     avg_p += this->pop[i];
   }
-  avg_i = avg_i / 50;
-  avg_p = avg_p / 50;
+  avg_i = avg_i / _STEPS;
+  avg_p = avg_p / _STEPS;
   this->avg_influx = avg_i;
   this->avg_pop = avg_p;
 }
@@ -271,7 +286,7 @@ int willGiveBirth(float avg_pop, long *state)
 
 int willCatchDisease(float avg_inf_level, long *state)
 {
-  float probability = 1000.0; // Decrease this to make more likely, increase less likely
+  float probability = 10000.0; // Decrease this to make more likely, increase less likely
   return (ran2(state) < (atan(((avg_inf_level < 40000 ? avg_inf_level : 40000)) / probability) / M_PI));
 }
 
@@ -288,6 +303,7 @@ static struct Squirrel new (int rank, int ID, int steps, int seed, float p_x, fl
   squirrel.avg_influx = 0;
   squirrel.avg_pop = 0;
   squirrel.steps = 0;
+  squirrel.last_steps = _STEPS;
   return squirrel;
 }
 

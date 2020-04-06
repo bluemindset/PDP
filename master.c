@@ -86,7 +86,6 @@ void master_send_instructions( int size, struct Registry_cell **r, int *workers)
   int cells_endID = (_NUM_CELLS / wc);
   int correctsplit = 1;
 
-
   /*Send the squirrels to the workers*/
   for (i = 0; i < ws; i++)
   {

@@ -1,0 +1,20 @@
+#!/bin/bash --login
+#
+#PBS -l select=4:ncpus=36
+#PBS -l place=excl
+#PBS -N 03
+#PBS -A d171-s1667002
+#PBS -l walltime=0:14:0
+
+
+
+# Switch to current working directory
+cd $PBS_O_WORKDIR
+
+module load mpt
+
+# Run the parallel program
+mpiexec_mpt -ppn 1 -n 4 ./main > output.txt
+
+
+

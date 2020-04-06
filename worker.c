@@ -1,4 +1,3 @@
-
 /*************************LIBRARIES**********************************/
 /********************************************************************/
 #include "mpi.h"
@@ -6,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <errno.h> 
 /********************************************************************/
 /***************************ACTORS***********************************/
 /********************************************************************/
@@ -59,7 +59,7 @@ struct Squirrel *spawnSquirrels(int startID, int endID, int rank, int unhealthy)
     /* Spawn actors*/
     for (i = 0; i < (endID - startID); i++)
     {
-        *(squirrels + k) = Squirrel.new(rank, i, 0, 5000, 0.0, 0.0);
+        *(squirrels + k) = Squirrel.new(rank, i + startID, 0, 5000, 0.0, 0.0);
 
         /*Drop the squirrel somewhere inside the map*/
         float new_x, new_y;
@@ -71,7 +71,7 @@ struct Squirrel *spawnSquirrels(int startID, int endID, int rank, int unhealthy)
 
         k++;
     }
-
+    //if (rank ==)
     for (i = 0; i < unhealthy; i++)
     {
         (squirrels + i)->health = 0;
@@ -108,7 +108,7 @@ int max_threshold(int num_squirrels)
 {
     if (num_squirrels > _MAX_SQUIRRELS)
     {
-        return 0;
+        send_command(_COMPLETE, _MASTER, 0);
     }
     return 1;
 }
@@ -129,7 +129,26 @@ void chronicle(struct month **lastmonth, int *healthy_s, int *unhealthy_s, float
     midnight->nextmonth = *lastmonth;
     *lastmonth = midnight;
 }
+int msleep(long msec)
+{
+    struct timespec ts;
+    int res;
 
+    if (msec < 0)
+    {
+        errno = EINVAL;
+        return -1;
+    }
+
+    ts.tv_sec = msec / 1000;
+    ts.tv_nsec = (msec % 1000) * 1000000;
+
+    do {
+        res = nanosleep(&ts, &ts);
+    } while (res && errno == EINTR);
+
+    return res;
+}
 void worker(int rank, struct Registry_cell *registry, int size)
 {
     /*Worker will either control cells or squirrels*/
@@ -158,8 +177,9 @@ void worker(int rank, struct Registry_cell *registry, int size)
     if (data[2] == 0)
     { /*Initally create the squirrels and assign them* their identities*/
 
+        int born=0;
+        int dead=0;
         int num_squirrels = (data[1] - data[0]);
-
         int data_cell[_MAX_SQUIRRELS][2];
         int healthy = 0;
         /* Spawn the squirrels on the worker*/
@@ -184,13 +204,13 @@ void worker(int rank, struct Registry_cell *registry, int size)
                         /* How active is this group of squirrels? 
                         Each month the activity of the squirrels changes.
                         Some become more active while other rest more!*/
-                        int lazyness = rand() % 10;
-                        delaySquirrel(lazyness);
+                        int lazyness = rand() % 20;
+                        msleep(lazyness);
 
                         /*Make squirrel work and collect the two references values
                         The function here issues an Ireceive for gathering information for
                         every cell.
-                    */
+                        */
                         if (squirrels + i != NULL)
                         {
                             squirrels_work(squirrels + i, rank, registry, data_cell[i], &alive, rs + healthy);
@@ -219,40 +239,45 @@ void worker(int rank, struct Registry_cell *registry, int size)
                 }
             }
 
-            if (_DEBUG)
+            if (0)
                 for (i = 0; i < num_squirrels; i++)
                 {
                     printf("Influx %d\n", data_cell[i][0]);
                     printf("Population %d\n", data_cell[i][1]);
                 }
-            if (should_terminate_worker(0))
+
+            /* If the squirrel life returns 1 , a newborn is in the game!!*/
+            /*Squirrels do their routine of life (death, born, catch disease)*/
+            
+            for (i = 0; i < num_squirrels; i++)
             {
-                /*Squirrels do their routine of life (death, born, catch disease)*/
-                for (i = 0; i < num_squirrels; i++)
+                /* If the squirrel life returns 1 , a newborn is in the game!!*/
+                if (squirrel_life(squirrels + i, data_cell[i][0], data_cell[i][1], &num_squirrels, rank,&dead))
                 {
-                    /* If the squirrel life returns 1 , a newborn is in the game!!*/
-                    if (squirrel_life(squirrels + i, data_cell[i][0], data_cell[i][1], &num_squirrels, rank) && max_threshold(num_squirrels))
-                    {     
-                       if(should_terminate_worker(0)){
-                          
-                          /*Carefully, it needs a realloc to work correctly*/
-                          squirrels = ( struct Squirrel *  ) realloc(squirrels,(num_squirrels+1) * sizeof(struct Squirrel) );
-                         *(squirrels + num_squirrels) = Squirrel.new(rank, num_squirrels, 0, 0, 0.0, 0.0);
-                         /* Drop the squirrel somewhere inside the same Cell position as the squirrel that was born */
-                         (squirrels + num_squirrels)->pos_x = (squirrels + i)->pos_x;
-                         (squirrels + num_squirrels)->pos_y = (squirrels + i)->pos_y;
+                    if (max_threshold(num_squirrels))
+                    {
+                         if (!should_terminate_worker(0)){ //This is added for minimizing the error value on born squirrels
+                        born++;
+                        /*Carefully, it needs a realloc to work correctly*/
+                        squirrels = (struct Squirrel *)realloc(squirrels, (num_squirrels + 1) * sizeof(struct Squirrel));
+                        *(squirrels + num_squirrels) = Squirrel.new(rank, num_squirrels, 0, 0, 0.0, 0.0);
+                        /* Drop the squirrel somewhere inside the same Cell position as the squirrel that was born */
+                        (squirrels + num_squirrels)->pos_x = (squirrels + i)->pos_x;
+                        (squirrels + num_squirrels)->pos_y = (squirrels + i)->pos_y;
                         /* Increase the squirrels the cell is handling */
                         num_squirrels++;
-                       }
+                         }
                     }
+                
                 }
-                healthy = 0;
             }
+            healthy = 0;
         }
-            free(squirrels);
+        free(squirrels);
+        printf("[Worker %d]Born squirrels: %d  ~~~ Dead Squirrels %d\n",rank, born,dead);
     }
     /* The worker handles cells*/
-    else if (data[2] == 1)
+    if (data[2] == 1)
     {
         int month = 0, ask = 0;
         int clock_msg = 1;
@@ -275,7 +300,7 @@ void worker(int rank, struct Registry_cell *registry, int size)
             alive = should_terminate_worker(ask);
             MPI_Status status;
             MPI_Request rs[num_cells];
-            int clock_messages = 0 ;
+            int clock_messages = 0;
             /* If the worker haven't ask to finish*/
             int cells_receive = 1;
             int recv_squirrels = 0;
@@ -304,6 +329,7 @@ void worker(int rank, struct Registry_cell *registry, int size)
                         work = 1;
                         MPI_Recv(&recv_data, 3, MPI_INT, status.MPI_SOURCE, status.MPI_TAG, MPI_COMM_WORLD, &status);
                         cellID = recv_data[1];
+                        /*Store the ID of the squirrel according with its health*/
                         store_squirrel(recv_data[2], squirrels_IDs_healthy, squirrels_IDs_unhealthy, recv_data[0]);
                     }
                     else if (status.MPI_TAG >= _TAG_CLOCK)
@@ -320,15 +346,15 @@ void worker(int rank, struct Registry_cell *registry, int size)
                         int send_data[2] = {(cells + (cellID - startID))->influx, (cells + (cellID - startID))->pop};
                         MPI_Send(&send_data, 2, MPI_INT, status.MPI_SOURCE, status.MPI_TAG, MPI_COMM_WORLD);
                         if (_DEBUG)
-                            printf("[Worker]Cell ID %d Sending Data to %d  %d \n", (cells + cellID - startID)->actor.ID, send_data[0], send_data[1]);
+                            printf("[Worker]Cell ID %d Sending Data to %d  %d \n", recv_data[2], send_data[0], send_data[1]);
 
                         /*Receive health value from the squierrel*/
                         recv_squirrels++;
 
                         if (recv_data[0] == 1)
-                            stats[(1 * (_NUM_CELLS) * _MAX_MONTHS_SIMULATION) + (cellID * _MAX_MONTHS_SIMULATION) + month]++;
+                            stats[(1 * (_NUM_CELLS)*_MAX_MONTHS_SIMULATION) + (cellID * _MAX_MONTHS_SIMULATION) + month]++;
                         else if (recv_data[0] == 0)
-                            stats[(0 * (_NUM_CELLS) * _MAX_MONTHS_SIMULATION) + (cellID * _MAX_MONTHS_SIMULATION) + month]++;
+                            stats[(0 * (_NUM_CELLS)*_MAX_MONTHS_SIMULATION) + (cellID * _MAX_MONTHS_SIMULATION) + month]++;
                     }
                     /*If this is from a clock*/
                     else if (work == 2)
@@ -362,7 +388,6 @@ void worker(int rank, struct Registry_cell *registry, int size)
 
                 int ready;
                 /*Test for all the values to be received from the cell */
-
                 MPI_Testall(num_cells, rs, &ready, MPI_STATUSES_IGNORE);
                 while (!ready && (alive) != 0)
                 {
@@ -373,7 +398,6 @@ void worker(int rank, struct Registry_cell *registry, int size)
                         ready = 1;
                     }
                 }
-
                 MPI_Request rstat[2];
                 MPI_Isend(squirrels_IDs_healthy, _MAX_SQUIRRELS, MPI_INT, _MASTER, _TAG_STATS_HEALTHY, MPI_COMM_WORLD, &rstat[0]);
                 MPI_Isend(squirrels_IDs_unhealthy, _MAX_SQUIRRELS, MPI_INT, _MASTER, _TAG_STATS_UNHEALTHY, MPI_COMM_WORLD, &rstat[1]);
@@ -389,7 +413,7 @@ void worker(int rank, struct Registry_cell *registry, int size)
                     }
                 }
 
-                if (_DEBUG)
+                if (1)
                     printf("Worker that handles cells received  %d squirrels messages\n", recv_squirrels);
                 recv_squirrels = 0;
 
@@ -408,8 +432,3 @@ void worker(int rank, struct Registry_cell *registry, int size)
         }
     }
 }
-
-//  static void send_msg_sq(int _rank, int _tag, MPI_Datatype mpi_type, MPI_Comm comm, struct Squirrel *this)
-//   {
-//     MPI_Send(this->health, 1, mpi_type, _rank, _tag, comm);
-//   }
