@@ -5,10 +5,10 @@
 
 ## Assignment Introduction
 
-The program simulates the squirrel parapoxvirus for 24 months. The squirrels can take a number of steps during the month and communicate with cells. 
-A month lasts about 2 seconds and after that the cells stop communication with the squirrels and update theirselfs. After that, the communication 
-starts again. The squirrels can catch a disease, give birth to other squirrels and die. When we reach 24 months, the cells communicate with the master
-and ask for the Master terminate the program. 
+The program simulates the squirrel parapoxvirus for 24 months. The squirrels can take a number of steps during the month and communicate with cells and update
+theirselfs. A month lasts about 2 seconds and after that the cells stop communication with the squirrels and update theirselfs.
+When that is finished, the communication starts again. The squirrels can catch a disease, give birth to other squirrels and die. 
+When we reach 24 months in the simulation, the cells communicate with the Master and ask him to terminate the program. 
 
 Assignment pdf file can be found here [here](ext/PDP_assignment.pdf).
 
@@ -16,9 +16,10 @@ Assignment pdf file can be found here [here](ext/PDP_assignment.pdf).
 
 On @Cirrus it runs properly by only loading the module:
 1. module load mpt
+
 If you want the latest MPI library by intel you can load:
-2. module  load intel-compilers-17
-3. module  load intel-mpi-17 
+1. module  load intel-compilers-17
+2. module  load intel-mpi-17 
 
 The program needs gcc/intel compiler in order to compile with mpi 0.
 #### GCC Compiler
@@ -29,13 +30,16 @@ $ gcc -v
  gcc version 4.8.5(GCC) (Red Hat 4.8.5-11)
 ```
 #### Mpirun
-Please install the mpirun if needed. [MPIRUN]https://www.open-mpi.org/doc/v4.0/man1/mpirun.1.php
+Please install the mpirun if needed. [MPIRUN](https://www.open-mpi.org/doc/v4.0/man1/mpirun.1.php)
 ```sh
 mpirun --version
 MPT: libxmpi.so 'HPE MPT 2.18  10/02/18 04:03:22'
 ```
 #### Doxygen:
-To generate a documentation in other formats rather than plain text might come handy. The project includes a doxygen configuration file. Install & Download [Doxygen](http://www.doxygen.org/download.html) if you like a good documentation in html files. Find the  `index.html` and open it with a modern browser:
+The header files and all the program are well commented. To generate a documentation in other formats rather than plain text might come handy. 
+The project includes a doxygen configuration file. 
+Install & Download [Doxygen](http://www.doxygen.org/download.html) if you want a good documentation in html files.
+Find the  `index.html` and open it with a modern browser:
 ```sh
 $ doxygen configDoxygen
 $ cd doc
@@ -60,11 +64,25 @@ To **print**  variables of the makefile issue:
 ```sh
 $ make print
 ```
-**Help** menu of makefile:
-```sh
-$ make help
-```
+
 ## Run
+
+#### Run Parameters
+The program intially starts with these parameters:
+
+1. **_MAX_SQUIRRELS** : 200
+
+2. **_NUM_INIT_SQUIRRELS**: 34
+
+3. **_MAX_MONTHS_SIMULATION**: 24
+
+4. **UNHEALTHY_SQUIRRELS**: 4
+
+5. **_NUM_CELLS**: 16
+
+6. **MONTH_IN_SEC**:  2
+
+These constants are defined in `main.h`. It is very important to mention that `getCellFromPosition()` which is given by the examiner limits the cells to be only 16. The program however can work if that function is changed to support more cells. Also, a month lasts about 2 seconds. 
 
 #### Run executable
 After the make command, the program can run via `parapoxvirus` which is located in`\bin`folder:
@@ -82,7 +100,5 @@ $ chmod +x  parapoxvirus
 $ mpirun -n 4 ./parapoxvirus
 ```
 
-
-
 ## Results 
-The results are printed on stdout by running locally. If you run using the submission script, a file called `months.out` will be created. 
+The results are printed on `stdout` by running locally. If you run using the submission script, a file called `months.out` will be created. 
