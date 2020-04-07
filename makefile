@@ -23,9 +23,7 @@ $(OBJ): ${OBJ_DIR}%.o: ${SRC_DIR}%.c
 clean:
 	rm -f $(OBJ)
 	rm -f $(EXE)
-	rm -f ${BIN_DIR}*.pgm
-	rm -f ${BIN_DIR}*.dat
-
+	rm -f /doc
 ##help:		Help menu. Type 'make --command' as shown below.
 .PHONY: help
 help: Makefile
