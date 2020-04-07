@@ -1,4 +1,9 @@
-
+/**
+ * @Author: B159973
+ * @Date:	10/4/2019
+ * @Course: Parallel Design Patterns - 2020
+ * @University of Edinburgh
+*/
 /*************************LIBRARIES**********************************/
 /********************************************************************/
 #include "mpi.h"
@@ -34,8 +39,7 @@ int main(int argc, char *argv[])
   int rank;
   int size;
   time_t t;
-   
-   
+
    /* Intializes random number generator */
   MPI_Init(NULL, NULL);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -48,19 +52,18 @@ int main(int argc, char *argv[])
   /*Give work to a worker*/
   if (statusCode == 1)
   {
-    worker(rank, registry, size - 1);
+    worker(rank, size - 1);
   }
   else if (statusCode == 2)
   {
-    /*Worker determines the jobs to give not other workers*/
+    /*Start the workers*/
     startworkers(size - 1, workers);
-
+    /*Send the workload to the workers*/
     master_send_instructions(size - 1, &registry, workers);
-
     /*While the master lives*/
     masterlives(registry, size - 1);
-    /*Send back to master the data */
   }
+  
   terminate_pool();
   MPI_Finalize();
 

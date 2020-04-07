@@ -75,80 +75,74 @@ int squirrel_life(struct Squirrel *squirrel, int influx, int pop, int *num_squir
  * Update the averages of the Squirrel based on the last 50 steps. 
  * @param influx:    The influx received from the Cell that the Squirrel stepped in.
  * @param pop:       The population received from the Cell that the Squirrel stepped in.
- * @param squirrel:       A pointer to the Squirrel structure.
- * @return:		 Nothing
+ * @param squirrel:  A pointer to the Squirrel structure.
+ * @return:		     Nothing
  ******************************************************************************/
 static void update_avgs(int influx, int pop, struct Squirrel *squirrel);
 
 /***************************************************************************//**
- * Update the statistics of the Cell by fetching the healthy and unhealthy squirrels
- * for the last 2 and 3 months. Virus can only live without a host for two months
- * in the environment. 
- * 
- * @param recvID:               The ID of the squirrel that i
- * @param squirrels_IDs_healthy: The current month that Cell is being updated.
- * @param squirrels_IDs_unhealthy:  The rank of the worker that Cell is handled by.
- * @param health: The stat table that holds the number of the healhty and unhealthy squirrels
- *               for each month.
- * @param cellID:The cell ID on the particular worker in dynamic memory.
- * @return:		 Nothing
+ * Store the squirrel ID in th statistics array according to its health status 
+ * @param recvID:                   The ID of the squirrel that will be stored 
+ * @param squirrels_IDs_healthy:    The list of IDs of healthy squirrels
+ * @param squirrels_IDs_unhealthy:  The list of IDs of unhealthy squirrels.
+ * @param health:                   The health status of the squirrel.
+ * @return:                 		 Nothing
  ******************************************************************************/
 void store_squirrel(int recvID, int *squirrels_IDs_healthy, int *squirrels_IDs_unhealthy,int health);
 
 /***************************************************************************//**
- * Update the statistics of the Cell by fetching the healthy and unhealthy squirrels
- * for the last 2 and 3 months. Virus can only live without a host for two months
- * in the environment. 
- * 
- * @param cell:  A pointer to the Cell structure.
- * @param month: The current month that Cell is being updated.
- * @param rank:  The rank of the worker that Cell is handled by.
- * @param stats: The stat table that holds the number of the healhty and unhealthy squirrels
- *               for each month.
- * @param cellID:The cell ID on the particular worker in dynamic memory.
- * @return:		 Nothing
+ * Initialize the IDs of the squirrels. Both of the list are initialized to -1.
+ * @param squirrels_IDs_healthy:    The list of IDs of healthy squirrels
+ * @param squirrels_IDs_unhealthy:  The list of IDs of unhealthy squirrels.
+ * @return:		                    Nothing
  ******************************************************************************/
 void init_squirrel_stats (int *squirrels_IDs_healthy, int *squirrels_IDs_unhealthy);
 /***************************************************************************//**
- * Update the statistics of the Cell by fetching the healthy and unhealthy squirrels
- * for the last 2 and 3 months. Virus can only live without a host for two months
- * in the environment. 
+ * Print statistics of the squirrels on that current month of the simulation. 
  * 
- * @param cell:  A pointer to the Cell structure.
- * @param month: The current month that Cell is being updated.
- * @param rank:  The rank of the worker that Cell is handled by.
- * @param stats: The stat table that holds the number of the healhty and unhealthy squirrels
- *               for each month.
- * @param cellID:The cell ID on the particular worker in dynamic memory.
- * @return:		 Nothing
+ * @param squirrels_IDs_healthy:    The list of IDs of healthy squirrels
+ * @param squirrels_IDs_unhealthy:  The list of IDs of unhealthy squirrels.
+ * @param month:                    The current month of the simulation
+ * @param rank:                    The rank of the worker that will print the stats.
+ * @return:		                    Nothing
  ******************************************************************************/
 void print_stat_squirrels(int *squirrels_IDs_healthy, int *squirrels_IDs_unhealthy, int month, int rank);
 
-/**
+/***************************************************************************//**
  * Simulates the step of a squirrel. You can call this with the arguments (0,0,&x,&y,&state)
  * to determine a random initial starting point.
  * x_new and y_new are the new x and y coordinates, state is used in the random number
  * generator and is also modified.
- * x_new can point to x, and y_new can point to y
- */
+ * x_new can point to x, and y_new can point to y 
+ * Funtion remains unchanged. 
+ * @return:		                    Nothing
+ * ******************************************************************************/
 void squirrelStep(float, float, float *, float *, long *);
 
-/**
- * Determines whether a squirrel will give birth or not based upon the average population and a random seed
- * which is modified. You can enclose this function call in an if statement if that is useful.
- */
+/***************************************************************************//**
+ * Determines whether a squirrel will give birth or not based upon the average population 
+ * and a random seed which is modified. You can enclose this function call in an 
+ * if statement if that is useful.
+ * Funtion remains unchanged. 
+ * @return:		                    1 for giving birth, 0 not giving birth.
+ * ******************************************************************************/
 int willGiveBirth(float, long *);
 
-/**
- * Determines whether a squirrel will catch the disease or not based upon the average infection level
- * and a random seed which is modified. You can enclose this function call in an if statement if that is useful.
- */
+/***************************************************************************//**
+ * Determines whether a squirrel will catch the disease or not based upon the average 
+ * infection level and a random seed which is modified. You can enclose this function
+ * call in an if statement if that is useful.
+ * @return:		                    1 Cathces disease else it is still healhty
+ * ******************************************************************************/
 int willCatchDisease(float, long *);
 
-/**
- * Determines if a squirrel will die or not. The state is used in the random number generation and
- * is modified. You can enclose this function call in an if statement if that is useful.
- */
+/***************************************************************************//**
+ *  Determines if a squirrel will die or not. The state is used in the random number
+ *  generation and is modified. You can enclose this function call in an
+ *  if statement if that is useful.
+ * 
+ * @return:		                    1 is Dead, 0 is alive 
+ * ******************************************************************************/
 int willDie(long *);
 
 /***************************************************************************//**

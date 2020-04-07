@@ -7,7 +7,6 @@
 #ifndef CELL_H_
 #define CELL_H_
 
-
  /***************************************************************************//**
  * Cell structure represents a single Cell Actor 
  * @actor:   The Actor class inside the Cell class

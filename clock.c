@@ -21,9 +21,26 @@
 #include "stdio.h"
 #include "mpi.h"
 #include <time.h>
+#include <errno.h> 
 /********************************************************************/
 #include "main.h"
 /********************************************************************/
+void chronicle(struct month **lastmonth, int *healthy_s, int *unhealthy_s)
+{
+    struct month *midnight = malloc(sizeof(struct month));
+    midnight->squirrels_healthy = (int *)calloc(_NUM_CELLS, sizeof(int));
+    midnight->squirrels_unhealthy = (int *)calloc(_NUM_CELLS, sizeof(int));
+    int i;
+    for (i = 0; i < _NUM_CELLS; i++)
+    {
+        midnight->squirrels_healthy[i] = healthy_s[i];
+        midnight->squirrels_unhealthy[i] = unhealthy_s[i];
+    }
+
+    midnight->ID = (*lastmonth)->ID + 1;
+    midnight->nextmonth = *lastmonth;
+    *lastmonth = midnight;
+}
 
 void clock_work(Registry_cell *r, int workers_size, struct Clock *clock)
 {
@@ -33,11 +50,8 @@ void clock_work(Registry_cell *r, int workers_size, struct Clock *clock)
   int num_workers = 0, k = 0, squirrels = 0;
   int *cells;
   int data_r[_NUM_CELLS][3];
-  float avg_influx = 0;
-  float avg_pop = 0;
   int cell_id;
   
-
   /*******Send to all cell workers that month has passed******/
   MPI_Request rsr[_NUM_CELLS];
   MPI_Request rss[_NUM_CELLS];
@@ -148,7 +162,7 @@ void clock_work(Registry_cell *r, int workers_size, struct Clock *clock)
 
   /* Update the timeline of the simulation, by inserting the number of healthy and unhealthy squirrels, influx and
   population from each cell*/
-  chronicle(&clock->timeline, squirrels_healthy, squirrels_unhealthy, avg_influx, avg_pop);
+  chronicle(&clock->timeline, squirrels_healthy, squirrels_unhealthy);
 
   printf("~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~\n");
   printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~%d~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n", clock->timeline->ID);
@@ -165,10 +179,27 @@ static struct Clock new (int rank, int ID)
   clock.timeline->ID = 0;
   clock.timeline->squirrels_healthy = 0;
   clock.timeline->squirrels_unhealthy = 0;
-  clock.timeline->avg_influx = 0;
-  clock.timeline->avg_pop = 0;
-
   return clock;
 }
 
+int msleep(long msec)
+{
+    struct timespec ts;
+    int res;
+
+    if (msec < 0)
+    {
+        errno = EINVAL;
+        return -1;
+    }
+
+    ts.tv_sec = msec / 1000;
+    ts.tv_nsec = (msec % 1000) * 1000000;
+
+    do {
+        res = nanosleep(&ts, &ts);
+    } while (res && errno == EINTR);
+
+    return res;
+}
 const struct ClockClass Clock = {.new = &new};

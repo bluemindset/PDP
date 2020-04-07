@@ -1,3 +1,9 @@
+/**
+ * @Author: B159973
+ * @Date:	10/4/2019
+ * @Course: Parallel Design Patterns - 2020
+ * @University of Edinburgh
+*/
 /*************************LIBRARIES**********************************/
 /********************************************************************/
 #include "mpi.h"
@@ -24,23 +30,16 @@
 #include "ran2.h"
 /********************************************************************/
 
-/*Return the rank of the cell*/
-
 int getCellFromPosition(float x, float y)
 {
     return ((int)(x * 4) + 4 * (int)(y * 4));
-}
-
-void print_pos(struct Squirrel *this)
-{
-    printf("\nSquirrel ID:%d, pos X:%f ,pos Y:%f ", this->actor.getID(&this->actor), this->pos_x, this->pos_y);
 }
 
 struct Cell *spawnCells(int startID, int endID, int rank)
 {
     struct Cell *cells = (struct Cell *)malloc((endID - startID) * sizeof(struct Cell));
     int i, k = 0;
-    /* Spawn actors*/
+    /* Spawn Cells*/
     for (i = 0; i < (endID - startID); i++)
     {
         *(cells + i) = Cell.new(rank, i);
@@ -56,7 +55,7 @@ struct Squirrel *spawnSquirrels(int startID, int endID, int rank, int unhealthy)
     struct Squirrel *squirrels = (struct Squirrel *)malloc((endID - startID) * sizeof(struct Squirrel));
     int i;
     int k = 0;
-    /* Spawn actors*/
+    /* Spawn Squirrels*/
     for (i = 0; i < (endID - startID); i++)
     {
         *(squirrels + k) = Squirrel.new(rank, i + startID, 0, 5000, 0.0, 0.0);
@@ -66,12 +65,12 @@ struct Squirrel *spawnSquirrels(int startID, int endID, int rank, int unhealthy)
         srand(time(NULL));
         long seed = rand() % __INT_MAX__;
         squirrelStep(0.0, 0.0, &new_x, &new_y, &seed);
+        
         (squirrels + k)->pos_x = new_x;
         (squirrels + k)->pos_y = new_y;
-
         k++;
     }
-    //if (rank ==)
+
     for (i = 0; i < unhealthy; i++)
     {
         (squirrels + i)->health = 0;
@@ -113,43 +112,7 @@ int max_threshold(int num_squirrels)
     return 1;
 }
 
-void chronicle(struct month **lastmonth, int *healthy_s, int *unhealthy_s, float avg_influx, float avg_pop)
-{
-    struct month *midnight = malloc(sizeof(struct month));
-    midnight->squirrels_healthy = (int *)calloc(_NUM_CELLS, sizeof(int));
-    midnight->squirrels_unhealthy = (int *)calloc(_NUM_CELLS, sizeof(int));
-    int i;
-    for (i = 0; i < _NUM_CELLS; i++)
-    {
-        midnight->squirrels_healthy[i] = healthy_s[i];
-        midnight->squirrels_unhealthy[i] = unhealthy_s[i];
-    }
-
-    midnight->ID = (*lastmonth)->ID + 1;
-    midnight->nextmonth = *lastmonth;
-    *lastmonth = midnight;
-}
-int msleep(long msec)
-{
-    struct timespec ts;
-    int res;
-
-    if (msec < 0)
-    {
-        errno = EINVAL;
-        return -1;
-    }
-
-    ts.tv_sec = msec / 1000;
-    ts.tv_nsec = (msec % 1000) * 1000000;
-
-    do {
-        res = nanosleep(&ts, &ts);
-    } while (res && errno == EINTR);
-
-    return res;
-}
-void worker(int rank, struct Registry_cell *registry, int size)
+void worker(int rank, int size)
 {
     /*Worker will either control cells or squirrels*/
     int alive = 1;
@@ -165,6 +128,7 @@ void worker(int rank, struct Registry_cell *registry, int size)
             OR
             [0] = start ID of cell
             [1] = end ID of cell
+            
             AND
             [2] = instatiate squirrels(0) or cells(1) 
         */

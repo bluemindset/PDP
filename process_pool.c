@@ -1,3 +1,9 @@
+/**
+ * @Author: B159973
+ * @Date:	10/4/2019
+ * @Course: Parallel Design Patterns - 2020
+ * @University of Edinburgh
+*/
 #include <stdlib.h>
 #include <stdio.h>
 #include "process_pool.h"
@@ -158,7 +164,7 @@ int startWorkerProcess()
     }
 }
 
-int startAwaitingTask(int awaiting_id, int UE_to_start)
+int startAwaitingTask(int processes_waiting_to_start, int UE_to_start)
 {
     int awaitingProcessMPIRank = -1;
     if (processes_waiting_to_start)
@@ -170,7 +176,7 @@ int startAwaitingTask(int awaiting_id, int UE_to_start)
             if (!UEs_state[i])
             {
                 UEs_state[i] = 1;
-                if (processes_waiting_to_start == awaiting_id)
+                if (processes_waiting_to_start == processes_waiting_to_start)
                 {
                     awaitingProcessMPIRank = i + 1;
                     printf("[Master] Starting process %d\n", i + 1);
@@ -240,8 +246,6 @@ int should_terminate_worker(int ask)
     }
     return 1;
 }
-
-
 
 /*Handling a workers receiving command*/
 static int recv_handler_worker()

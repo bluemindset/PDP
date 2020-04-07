@@ -1,3 +1,9 @@
+/**
+ * @Author: UoE
+ * @Date:	10/4/2019
+ * @Course: Parallel Design Patterns - 2020
+ * @University of Edinburgh
+*/
 #include <stdio.h>
 #include "ran2.h"
 
