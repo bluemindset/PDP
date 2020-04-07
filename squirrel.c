@@ -27,7 +27,7 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-void squirrels_work(struct Squirrel *squirrel, int rank, struct Registry_cell *registry, int data_recv[2], int *alive, MPI_Request *rr)
+void squirrels_comm(struct Squirrel *squirrel, int rank, int data_recv[2], int *alive, MPI_Request *rr)
 {
   float new_x, new_y;
   long seed = 1;

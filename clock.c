@@ -1,4 +1,9 @@
-
+/**
+ * @Author: B159973
+ * @Date:	10/4/2019
+ * @Course: Parallel Design Patterns - 2020
+ * @University of Edinburgh
+*/
 /***************************ACTORS***********************************/
 /********************************************************************/
 #include "actor.h"
@@ -22,22 +27,21 @@
 
 void clock_work(Registry_cell *r, int workers_size, struct Clock *clock)
 {
-  /* Clock, one month passes */
-
   int i = 0, j = 0, month = 0, y = 0;
   int forever = 1;
   struct Registry_cell *current_r = r;
   int num_workers = 0, k = 0, squirrels = 0;
   int *cells;
+  int data_r[_NUM_CELLS][3];
+  float avg_influx = 0;
+  float avg_pop = 0;
+  int cell_id;
+  
 
   /*******Send to all cell workers that month has passed******/
   MPI_Request rsr[_NUM_CELLS];
   MPI_Request rss[_NUM_CELLS];
 
-  int data_r[_NUM_CELLS][3];
-  float avg_influx = 0;
-  float avg_pop = 0;
-  int cell_id;
   /*Squirrels healthy and unhealthy that passed from each cell*/
   int *squirrels_healthy = (int *)calloc(_NUM_CELLS, sizeof(int));
   int *squirrels_unhealthy = (int *)calloc(_NUM_CELLS, sizeof(int));
@@ -73,11 +77,9 @@ void clock_work(Registry_cell *r, int workers_size, struct Clock *clock)
   MPI_Waitall(_NUM_CELLS, rsr, MPI_STATUSES_IGNORE);
 
   /*Receive from each cell
-    a) Cell ID
-    b) Avg population of the cell
-    c) Avg Influx of the cell
-    d) Unhealthy squirrells
-    e) Healthy squirrels
+    1) Healthy squirrels
+    2) Unhealthy squirrells
+    3) Cell ID
 */
   for (i = 0; i < _NUM_CELLS; i++)
   {
@@ -86,6 +88,7 @@ void clock_work(Registry_cell *r, int workers_size, struct Clock *clock)
     cell_id = data_r[i][2];
   }
 
+  /*Receive from every worker the IDs of healthy and unhealthy squirrels that step into that group of cells*/
   int u_stats[num_workers][_MAX_SQUIRRELS];
   int h_stats[num_workers][_MAX_SQUIRRELS];
   MPI_Request r_stats_h[num_workers];
@@ -102,13 +105,14 @@ void clock_work(Registry_cell *r, int workers_size, struct Clock *clock)
 
   int healthy_squarrels[_MAX_SQUIRRELS];
   int unhealthy_squarrels[_MAX_SQUIRRELS];
-  init_squirrel_stats(healthy_squarrels,unhealthy_squarrels);
   int inside_u;
   int inside_h;
   int h_c = 0;
   int u_c = 0;
 
-  
+  init_squirrel_stats(healthy_squarrels,unhealthy_squarrels);
+
+  /*Filter out the number of healhty and unhealthy squirrels*/
   for (i = 0; i < num_workers; i++)
   {
     for (j = 0; j < _MAX_SQUIRRELS; j++)
@@ -144,22 +148,13 @@ void clock_work(Registry_cell *r, int workers_size, struct Clock *clock)
 
   /* Update the timeline of the simulation, by inserting the number of healthy and unhealthy squirrels, influx and
   population from each cell*/
-
   chronicle(&clock->timeline, squirrels_healthy, squirrels_unhealthy, avg_influx, avg_pop);
+
   printf("~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~\n");
   printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~%d~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n", clock->timeline->ID);
   printf("~~~~~~~~~~~~~~~~~~~~~~~MONTH CHANGE~~~~~~~~~~~~~~~~~~~~~~~\n");
 }
 
-void delaySquirrel(int delay)
-{
-  int i = 0;
-  int factor = 10000; // factor of one million
-  while (i < delay * factor)
-  {
-    i++; // Loop until it arrives.
-  }
-}
 
 static struct Clock new (int rank, int ID)
 {

@@ -1,8 +1,26 @@
+/**
+ * @Author: B159973
+ * @Date:	10/4/2019
+ * @Course: Parallel Design Patterns - 2020
+ * @University of Edinburgh
+*/
 #ifndef _SQUIRREL_H
 #define _SQUIRREL_H
+#include "mpi.h"
 
+ /***************************************************************************//**
+ * Cell structure represents a single Cell Actor 
+ * @actor:      The Actor class inside the Cell class
+ * @ID:		    The identification number of the cell acotr.
+ * @pos_x:      The current position in the map on the x-axis. (NOT USED)-Deprecated because of getCellPosition()
+ * @pos_y:      The current position in the map on the y-axis. (NOT USED)-Deprecated because of getCellPosition()
+ * @influx:	    The values of the influx of cells that the Squirrel stepped in.
+ * @pop:        The values of the population of cells that the Squirrel stepped in.
+ * @avg_influx: The average influx value of the squirrel that uses to update itself.
+ * @avg_pop:    The average population value of the squirrel uses to update itself.
+ * @last_steps: The number of last steps of the Squirrels. Initially is 50. 
+ ******************************************************************************/
 struct Squirrel {
-    /*Declaring actor fields*/
     struct Actor actor; 
     int steps;
     int seed; 
@@ -15,33 +33,96 @@ struct Squirrel {
     double avg_pop;
     int last_steps;
     void (*update_avgs)(int influx, int pop, struct Squirrel *this);
-
 };
 
+/***************************************************************************//**
+ * Constructor of the Squirrel Class. 
+ ******************************************************************************/
 extern const struct SquirrelClass{
     struct Squirrel (*new)(int rank, int ID, int steps,int seed,float pos_x,float pos_y);
 } Squirrel;
 
-void squirrels_work(struct Squirrel * squirrel, int rank, struct Registry_cell *registry, int  data[2],int * alive,MPI_Request * r);
+/***************************************************************************//**
+ * This is the basic communication function that is executed for each squirrel inside the worker's
+ * loop. The squirrel first sends a message to the worker, receives the cell rank and sends back 
+ * to the rank its health. After that it wait to the r request to be complete which is the receive
+ * influx and population from the cell.   
+ * @param squirrel:  A pointer to the Squirrel structure.
+ * @param rank:      Rank of the worker that the Squirrel is handled by.
+ * @param data:      The data that are received from the Cell(influx and population)
+ * @param r:         The MPI request of the cell receive message.
+ * @param alive:     Flag that keeps the worker alive
+ * @return:		     Nothing
+ ******************************************************************************/
+void squirrels_comm(struct Squirrel * squirrel, int rank, int  data[2],int * alive,MPI_Request * r);
+
+/***************************************************************************//**
+ Squirrel Routine:  1. Update the inner average of the squirrel (inlfux and population) 
+ *  2. Calculate the propability to catch a disease. 
+ *  3.Caclulate propoability to die and kill the squirrel. 4. Caclulate propability to born 
+ * and give life to a newborn. 
+ * @param squirrel:     A pointer to the Squirrel structure.
+ * @param influx:       The influx received from the Cell that the Squirrel stepped in.
+ * @param pop:          The population received from the Cell that the Squirrel stepped in.
+ * @param num_squirrel: The number of the squirrels of the worker.
+ * @param rank:         Rank of the worker that the Squirrel is handled by.
+ * @param dead:         The number of the dead squirrels.
+ * @return:		        1 if a squirrel is born else 0.
+ ******************************************************************************/
 int squirrel_life(struct Squirrel *squirrel, int influx, int pop, int *num_squirrels,int rank,int *dead);
 
-/*Update the averages of the squirrels*/
-static void update_avgs(int influx, int pop, struct Squirrel *this);
+/***************************************************************************//**
+ * Update the averages of the Squirrel based on the last 50 steps. 
+ * @param influx:    The influx received from the Cell that the Squirrel stepped in.
+ * @param pop:       The population received from the Cell that the Squirrel stepped in.
+ * @param squirrel:       A pointer to the Squirrel structure.
+ * @return:		 Nothing
+ ******************************************************************************/
+static void update_avgs(int influx, int pop, struct Squirrel *squirrel);
 
-/* Squirrel Routine 
-      1. Move 
-      2. Send Message to cell health status and wait until successfull
-      3. Caclulate prop die 
-      4. Caclulate prop born 
-     */
-    
+/***************************************************************************//**
+ * Update the statistics of the Cell by fetching the healthy and unhealthy squirrels
+ * for the last 2 and 3 months. Virus can only live without a host for two months
+ * in the environment. 
+ * 
+ * @param recvID:               The ID of the squirrel that i
+ * @param squirrels_IDs_healthy: The current month that Cell is being updated.
+ * @param squirrels_IDs_unhealthy:  The rank of the worker that Cell is handled by.
+ * @param health: The stat table that holds the number of the healhty and unhealthy squirrels
+ *               for each month.
+ * @param cellID:The cell ID on the particular worker in dynamic memory.
+ * @return:		 Nothing
+ ******************************************************************************/
 void store_squirrel(int recvID, int *squirrels_IDs_healthy, int *squirrels_IDs_unhealthy,int health);
-void init_squirrel_stats (int *squirrels_IDs_healthy, int *squirrels_IDs_unhealthy);
-void print_stat_squirrels(int *squirrels_IDs_healthy, int *squirrels_IDs_unhealthy, int month, int rank);
-void selection_sort(int * a);
-int  find_max(int * a, int high);
-void swap(int * a, int p1, int p2);
 
+/***************************************************************************//**
+ * Update the statistics of the Cell by fetching the healthy and unhealthy squirrels
+ * for the last 2 and 3 months. Virus can only live without a host for two months
+ * in the environment. 
+ * 
+ * @param cell:  A pointer to the Cell structure.
+ * @param month: The current month that Cell is being updated.
+ * @param rank:  The rank of the worker that Cell is handled by.
+ * @param stats: The stat table that holds the number of the healhty and unhealthy squirrels
+ *               for each month.
+ * @param cellID:The cell ID on the particular worker in dynamic memory.
+ * @return:		 Nothing
+ ******************************************************************************/
+void init_squirrel_stats (int *squirrels_IDs_healthy, int *squirrels_IDs_unhealthy);
+/***************************************************************************//**
+ * Update the statistics of the Cell by fetching the healthy and unhealthy squirrels
+ * for the last 2 and 3 months. Virus can only live without a host for two months
+ * in the environment. 
+ * 
+ * @param cell:  A pointer to the Cell structure.
+ * @param month: The current month that Cell is being updated.
+ * @param rank:  The rank of the worker that Cell is handled by.
+ * @param stats: The stat table that holds the number of the healhty and unhealthy squirrels
+ *               for each month.
+ * @param cellID:The cell ID on the particular worker in dynamic memory.
+ * @return:		 Nothing
+ ******************************************************************************/
+void print_stat_squirrels(int *squirrels_IDs_healthy, int *squirrels_IDs_unhealthy, int month, int rank);
 
 /**
  * Simulates the step of a squirrel. You can call this with the arguments (0,0,&x,&y,&state)
@@ -70,5 +151,17 @@ int willCatchDisease(float, long *);
  */
 int willDie(long *);
 
+/***************************************************************************//**
+ * Simple selection sort. Helper function for debbuging code
+ ******************************************************************************/
+void selection_sort(int * a);
+/***************************************************************************//**
+ * Finding Maximum. Helper function for debbuging code
+ ******************************************************************************/
+int  find_max(int * a, int high);
+/***************************************************************************//**
+ * Swapping variables. Helper function for debbuging code
+ ******************************************************************************/
+void swap(int * a, int p1, int p2);
 
 #endif

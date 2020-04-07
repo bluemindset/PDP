@@ -43,7 +43,7 @@ struct Cell *spawnCells(int startID, int endID, int rank)
     /* Spawn actors*/
     for (i = 0; i < (endID - startID); i++)
     {
-        *(cells + i) = Cell.new(rank, i, 0.0, 0.0);
+        *(cells + i) = Cell.new(rank, i);
         (cells + i)->influx = 0;
         (cells + i)->pop = 0;
     }
@@ -213,7 +213,7 @@ void worker(int rank, struct Registry_cell *registry, int size)
                         */
                         if (squirrels + i != NULL)
                         {
-                            squirrels_work(squirrels + i, rank, registry, data_cell[i], &alive, rs + healthy);
+                            squirrels_comm(squirrels + i, rank, data_cell[i], &alive, rs + healthy);
                             healthy++;
                         }
                     }
