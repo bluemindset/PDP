@@ -63,7 +63,6 @@ int main(int argc, char *argv[])
     /*While the master lives*/
     masterlives(registry, size - 1);
   }
-  
   terminate_pool();
   MPI_Finalize();
 

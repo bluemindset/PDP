@@ -23,7 +23,7 @@ $(OBJ): ${OBJ_DIR}%.o: ${SRC_DIR}%.c
 clean:
 	rm -f $(OBJ)
 	rm -f $(EXE)
-	rm -f /doc
+
 ##help:		Help menu. Type 'make --command' as shown below.
 .PHONY: help
 help: Makefile

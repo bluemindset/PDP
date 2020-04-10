@@ -196,7 +196,7 @@ void store_squirrel(int recvID, int *squirrels_IDs_healthy, int *squirrels_IDs_u
   }
 }
 
-int squirrel_life(struct Squirrel *squirrel, int influx, int pop, int *num_squirrels, int rank, int *dead)
+int squirrel_life(struct Squirrel *squirrel, int influx, int pop, int *num_squirrels, int rank, int *dead,int * squirrels_in_simulation)
 {
   long seed;
   int newborn = 0;
@@ -234,6 +234,7 @@ int squirrel_life(struct Squirrel *squirrel, int influx, int pop, int *num_squir
         if (willDie(&seed))
         {
           squirrel->health = -1;
+          (*squirrels_in_simulation)--;
           (*dead)++;
         }
       }
@@ -292,7 +293,7 @@ int willGiveBirth(float avg_pop, long *state)
 
 int willCatchDisease(float avg_inf_level, long *state)
 {
-  float probability = 10000.0; // Decrease this to make more likely, increase less likely
+  float probability = 100.0; // Decrease this to make more likely, increase less likely
   return (ran2(state) < (atan(((avg_inf_level < 40000 ? avg_inf_level : 40000)) / probability) / M_PI));
 }
 

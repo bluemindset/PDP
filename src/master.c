@@ -83,7 +83,7 @@ void master_send_instructions( int size, struct Registry_cell **r, int *workers)
   }
 
   /***************************************** WORKERS INITIALIZATION ****************************************/
-  int data[3];
+  int data[4];
   int squirrels_startID = 0, cells_startID = 0;
   int squirrels_endID = (_NUM_INIT_SQUIRRELS / ws);
   int cells_endID = (_NUM_CELLS / wc);
@@ -99,12 +99,15 @@ void master_send_instructions( int size, struct Registry_cell **r, int *workers)
     data[0] = squirrels_startID;
     data[1] = squirrels_endID;
     data[2] = 0;  /*This indicates what actor type it the worker should handle (Squirrels)*/
-
+    if (i == 0)
+      data[3] = UNHEALTHY_SQUIRRELS;  /*This for the unhealthy squirrels*/
+    else
+      data[3] = 0; 
     /*Assign the IDs of the actors to the registry and send them to the workers*/
     assign_registry(r, workers_squirrels[i], squirrels_startID, squirrels_endID,
                     0, 0, 0);
 
-    MPI_Send(&data, 3, MPI_INT, workers_squirrels[i], _TAG_INITIAL, MPI_COMM_WORLD);
+    MPI_Send(&data, 4, MPI_INT, workers_squirrels[i], _TAG_INITIAL, MPI_COMM_WORLD);
     if (_DEBUG)
       printf("Sending to rank : %d, the data %d %d %d\n", workers_squirrels[i], data[0], data[1], data[2]);
     squirrels_startID += (_NUM_INIT_SQUIRRELS / ws);
@@ -121,11 +124,11 @@ void master_send_instructions( int size, struct Registry_cell **r, int *workers)
     data[0] = cells_startID;
     data[1] = cells_endID;
     data[2] = 1; /* This indicates what actor type it the worker should handle (Cells)*/
-
+    data[3] = 0;
     /*Assign the IDs of the actors to the registry and send them to the workers*/
     assign_registry(r, workers_cells[i], 0, 0,
                     cells_startID, cells_endID, 1);
-    MPI_Send(&data, 3, MPI_INT, workers_cells[i], _TAG_INITIAL, MPI_COMM_WORLD);
+    MPI_Send(&data, 4, MPI_INT, workers_cells[i], _TAG_INITIAL, MPI_COMM_WORLD);
 
     if (_DEBUG)
       printf("Sending to rank : %d, the data %d %d %d\n ", workers_cells[i], data[0], data[1], data[2]);
@@ -152,7 +155,7 @@ void masterlives(Registry_cell *r, int workers_size)
     /* If the master receives any message from workers it 
     evaluates it */
     MPI_Status status;
-    unsigned int retTime = time(0) + MONTH_IN_SEC;
+    unsigned int retTime = time(0) + MONTH_DURATION;
     
     /* For one month, squirrels and cells can exchange messages*/
     while ( (time(0) < retTime) && masterStatus)

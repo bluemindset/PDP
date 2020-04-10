@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <errno.h> 
+#include <errno.h>
 /********************************************************************/
 /***************************ACTORS***********************************/
 /********************************************************************/
@@ -65,7 +65,7 @@ struct Squirrel *spawnSquirrels(int startID, int endID, int rank, int unhealthy)
         srand(time(NULL));
         long seed = rand() % __INT_MAX__;
         squirrelStep(0.0, 0.0, &new_x, &new_y, &seed);
-        
+
         (squirrels + k)->pos_x = new_x;
         (squirrels + k)->pos_y = new_y;
         k++;
@@ -108,8 +108,10 @@ int max_threshold(int num_squirrels)
     if (num_squirrels > _MAX_SQUIRRELS)
     {
         send_command(_COMPLETE, _MASTER, 0);
+        printf("Error - More than %d of squirrels\n",_MAX_SQUIRRELS+1);
+        exit(0);
     }
-    return 1;
+    return 0;
 }
 
 void worker(int rank, int size)
@@ -118,8 +120,8 @@ void worker(int rank, int size)
     int alive = 1;
 
     /* Receive message from the master to start the work*/
-    int data[3];
-    MPI_Recv(&data, 3, MPI_INT, _MASTER, _TAG_INITIAL, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    int data[4];
+    MPI_Recv(&data, 4, MPI_INT, _MASTER, _TAG_INITIAL, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
     /*
             Data package 
@@ -131,6 +133,9 @@ void worker(int rank, int size)
             
             AND
             [2] = instatiate squirrels(0) or cells(1) 
+
+            AND 
+            [3] = to instatiate unhealthy squirrels
         */
     /*Instanitate with correct IDs*/
     int success_assign = 1, success_all_assign = 0;
@@ -140,14 +145,16 @@ void worker(int rank, int size)
     /* If the worker handles squirrels*/
     if (data[2] == 0)
     { /*Initally create the squirrels and assign them* their identities*/
-
-        int born=0;
-        int dead=0;
+        int squirrels_in_simulation=_NUM_INIT_SQUIRRELS;
+        int born = 0;
+        int dead = 0;
         int num_squirrels = (data[1] - data[0]);
         int data_cell[_MAX_SQUIRRELS][2];
         int healthy = 0;
+        int ask = 0;
         /* Spawn the squirrels on the worker*/
-        struct Squirrel *squirrels = spawnSquirrels(data[0], data[1], rank, UNHEALTHY_SQUIRRELS);
+        printf("DATA 3 %d\n\n\n",data[3]);
+        struct Squirrel *squirrels = spawnSquirrels(data[0], data[1], rank, data[3]);
 
         /*Reduce to master for a sychronization, for a succesful spawning*/
         MPI_Reduce(&success_assign, &success_all_assign, 1, MPI_FLOAT, MPI_SUM, _MASTER,
@@ -156,7 +163,7 @@ void worker(int rank, int size)
         while (alive)
         {
             MPI_Request *rs = (MPI_Request *)malloc(sizeof(MPI_Request) * _MAX_SQUIRRELS);
-            alive = should_terminate_worker(0);
+            alive = should_terminate_worker(ask);
             /*Start the squirrels work*/
             if (alive)
             {
@@ -168,7 +175,7 @@ void worker(int rank, int size)
                         /* How active is this group of squirrels? 
                         Each month the activity of the squirrels changes.
                         Some become more active while other rest more!*/
-                        int lazyness = rand() % 20;
+                        int lazyness =  rand() % MAX_SQUIRRELS_LAZINESS;
                         msleep(lazyness);
 
                         /*Make squirrel work and collect the two references values
@@ -196,14 +203,14 @@ void worker(int rank, int size)
             while (!ready && alive != 0)
             {
                 MPI_Testall(healthy, rs, &ready, MPI_STATUSES_IGNORE);
-                if (should_terminate_worker(0) == 0)
+                if (should_terminate_worker(ask) == 0)
                 {
                     alive = 0;
                     ready = 1;
                 }
             }
 
-            if (0)
+            if (_DEBUG)
                 for (i = 0; i < num_squirrels; i++)
                 {
                     printf("Influx %d\n", data_cell[i][0]);
@@ -212,15 +219,23 @@ void worker(int rank, int size)
 
             /* If the squirrel life returns 1 , a newborn is in the game!!*/
             /*Squirrels do their routine of life (death, born, catch disease)*/
-            
+            int error = 0;
             for (i = 0; i < num_squirrels; i++)
             {
                 /* If the squirrel life returns 1 , a newborn is in the game!!*/
-                if (squirrel_life(squirrels + i, data_cell[i][0], data_cell[i][1], &num_squirrels, rank,&dead))
+                if (squirrel_life(squirrels + i, data_cell[i][0], data_cell[i][1], &num_squirrels, rank, &dead, &squirrels_in_simulation))
                 {
-                    if (max_threshold(num_squirrels))
+                    if (!error)
                     {
-                         if (!should_terminate_worker(0)){ //This is added for minimizing the error value on born squirrels
+                        if (max_threshold(squirrels_in_simulation))
+                        {
+                            error = 1;
+                            alive = 0;
+                        }
+                    }
+                    if (!error)         /* For not giving birth enter error without the negation!!!*/
+                    {
+                        //This is added for minimizing the error value on born squirrels
                         born++;
                         /*Carefully, it needs a realloc to work correctly*/
                         squirrels = (struct Squirrel *)realloc(squirrels, (num_squirrels + 1) * sizeof(struct Squirrel));
@@ -230,15 +245,14 @@ void worker(int rank, int size)
                         (squirrels + num_squirrels)->pos_y = (squirrels + i)->pos_y;
                         /* Increase the squirrels the cell is handling */
                         num_squirrels++;
-                         }
+                        squirrels_in_simulation++;
                     }
-                
                 }
             }
             healthy = 0;
         }
         free(squirrels);
-        printf("[Worker %d]Born squirrels: %d  ~~~ Dead Squirrels %d\n",rank, born,dead);
+        printf("[Worker %d]Born squirrels: %d  ~~~ Dead Squirrels %d ~~ In simulation Squirrels: %d\n", rank, born, dead,squirrels_in_simulation);
     }
     /* The worker handles cells*/
     if (data[2] == 1)

@@ -69,7 +69,7 @@ void squirrels_comm(struct Squirrel * squirrel, int rank, int  data[2],int * ali
  * @param dead:         The number of the dead squirrels.
  * @return:		        1 if a squirrel is born else 0.
  ******************************************************************************/
-int squirrel_life(struct Squirrel *squirrel, int influx, int pop, int *num_squirrels,int rank,int *dead);
+int squirrel_life(struct Squirrel *squirrel, int influx, int pop, int *num_squirrels,int rank,int *dead,int *squirrels_in_simulation);
 
 /***************************************************************************//**
  * Update the averages of the Squirrel based on the last 50 steps. 

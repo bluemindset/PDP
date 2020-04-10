@@ -105,7 +105,7 @@ void terminate_pool()
         /* Barrier the termination and free the datatype*/
     }
     MPI_Barrier(MPI_COMM_WORLD);
-    //   MPI_Type_free(&Message_Control_DataType);
+    MPI_Type_free(&Message_Control_DataType);
 }
 
 /*Wait forever and handle the receives  (Master Poll)*/
@@ -164,7 +164,7 @@ int startWorkerProcess()
     }
 }
 
-int startAwaitingTask(int processes_waiting_to_start, int UE_to_start)
+int startAwaitingTask(int ps, int UE_to_start)
 {
     int awaitingProcessMPIRank = -1;
     if (processes_waiting_to_start)
@@ -176,7 +176,7 @@ int startAwaitingTask(int processes_waiting_to_start, int UE_to_start)
             if (!UEs_state[i])
             {
                 UEs_state[i] = 1;
-                if (processes_waiting_to_start == processes_waiting_to_start)
+                if (processes_waiting_to_start == ps)
                 {
                     awaitingProcessMPIRank = i + 1;
                     printf("[Master] Starting process %d\n", i + 1);

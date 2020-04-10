@@ -40,6 +40,7 @@ The header files and all the program are well commented. To generate a documenta
 The project includes a doxygen configuration file. 
 Install & Download [Doxygen](http://www.doxygen.org/download.html) if you want a good documentation in html files.
 Find the  `index.html` and open it with a modern browser:
+
 ```sh
 $ doxygen configDoxygen
 $ cd doc
@@ -80,9 +81,11 @@ The program intially starts with these parameters:
 
 5. **_NUM_CELLS**: 16
 
-6. **MONTH_IN_SEC**:  2
+6. **MONTH_DURATION**:  2
 
-These constants are defined in `main.h`. It is very important to mention that `getCellFromPosition()` which is given by the examiner limits the cells to be only 16. The program however can work if that function is changed to support more cells. Also, a month lasts about 2 seconds. 
+7. **MAX_SQUIRRELS_LAZINESS**: 20 
+
+These constants are defined in `main.h`. It is very important to mention that `getCellFromPosition()` which is given by the examiner limits the cells to be only 16. The program however can work if that function is changed to support more cells. Also, a month lasts about 2 seconds (2000ms). The maximum squirrel delay is 20 milliseconds. 
 
 #### Run executable
 After the make command, the program can run via `parapoxvirus` which is located in`\bin`folder:

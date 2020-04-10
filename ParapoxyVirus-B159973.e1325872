@@ -1,0 +1,4 @@
+.bin/parapoxvirus: No such file or directory
+MPT ERROR: could not run executable.
+	(HPE MPT 2.18  10/02/18 04:03:22)
+/var/spool/PBS/mom_priv/jobs/1325872.indy2-login0.SC: line 18: 60098 Killed                  mpiexec_mpt -ppn 1 -n 4 .bin/parapoxvirus > months.out
